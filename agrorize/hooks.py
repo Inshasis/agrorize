@@ -1,6 +1,6 @@
 app_name = "agrorize"
 app_title = "AgroRize"
-app_publisher = "hidayat@agrorize.com"
+app_publisher = "hidayatali"
 app_description = "Agrorize - Contract Farming"
 app_email = "hidayat@agrorize.com"
 app_license = "mit"
@@ -247,3 +247,24 @@ app_license = "mit"
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
 
+
+# Fixtures
+# --------
+# Export fixtures to version control
+# fixtures = [
+#     {
+#         "dt": "Custom Field",
+#         "filters": [
+#             ["dt", "in", ["Lead"]]
+#         ]
+#     },
+#     {
+#         "dt": "Property Setter",
+#         "filters": [
+#             ["doc_type", "in", ["Lead"]]
+#         ]
+#     }
+# ]
+
+
+# bench --site agro export-fixtures --app agrorize
