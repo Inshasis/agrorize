@@ -1,0 +1,682 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-04-08 20:34:58.576361",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "basic_section",
+  "naming_series",
+  "contract_type",
+  "contract_status",
+  "company",
+  "column_break_1",
+  "contract_date",
+  "start_date",
+  "end_date",
+  "total_duration_days",
+  "farmer_section",
+  "farmer",
+  "farmer_name",
+  "farmer_code",
+  "mobile_no",
+  "column_break_farmer",
+  "email",
+  "village",
+  "district",
+  "state",
+  "land_section",
+  "total_land_area",
+  "contract_land_area",
+  "land_uom",
+  "column_break_land",
+  "soil_type",
+  "irrigation_type",
+  "land_location",
+  "party_section",
+  "customer",
+  "customer_name",
+  "column_break_party",
+  "supplier",
+  "supplier_name",
+  "product_section",
+  "product_category",
+  "primary_product",
+  "variety",
+  "column_break_product",
+  "expected_total_quantity",
+  "quantity_uom",
+  "expected_yield_per_acre",
+  "crop_config_section",
+  "crop_cycle_type",
+  "harvest_frequency",
+  "harvest_cycle_days",
+  "column_break_crop",
+  "sowing_season",
+  "first_harvest_date",
+  "total_expected_harvests",
+  "harvest_schedule_section",
+  "crop_harvest_schedule",
+  "pricing_section",
+  "base_price_per_unit",
+  "price_uom",
+  "column_break_pricing",
+  "price_type",
+  "market_linked",
+  "totals_section",
+  "total_contract_value",
+  "column_break_totals",
+  "total_quantity_contracted",
+  "footer_section",
+  "amended_from",
+  "column_break_footer",
+  "delivery_and_attachments_tab",
+  "logistics_section",
+  "delivery_location",
+  "delivery_terms",
+  "column_break_logistics",
+  "transport_responsibility",
+  "storage_terms",
+  "attachments_section",
+  "attachments",
+  "terms_and_payments_tab",
+  "terms_section",
+  "terms_and_conditions",
+  "special_clauses",
+  "column_break_terms",
+  "termination_clause",
+  "payment_section",
+  "payment_terms",
+  "payment_cycle",
+  "advance_percentage",
+  "column_break_payment",
+  "payment_method",
+  "bank_account"
+ ],
+ "fields": [
+  {
+   "fieldname": "basic_section",
+   "fieldtype": "Section Break",
+   "label": "Basic Information"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "FCON-.YYYY.-\nFCON-TULSI-.YYYY.-\nFCON-VEG-.YYYY.-\nFCON-GRAIN-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "contract_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Contract Status",
+   "options": "Draft\nPending Approval\nActive\nOn Hold\nExpired\nTerminated\nCompleted",
+   "reqd": 1
+  },
+  {
+   "fieldname": "contract_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Contract Type",
+   "options": "Supply Contract\nBuy-Back Agreement\nContract Farming\nSeasonal Contract\nAnnual Contract\nMulti-Year Contract",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "contract_date",
+   "fieldtype": "Date",
+   "label": "Contract Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "End Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_duration_days",
+   "fieldtype": "Int",
+   "label": "Total Duration (Days)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "farmer_section",
+   "fieldtype": "Section Break",
+   "label": "Farmer Details"
+  },
+  {
+   "fieldname": "farmer",
+   "fieldtype": "Link",
+   "in_global_search": 1,
+   "in_standard_filter": 1,
+   "label": "Farmer",
+   "options": "Farmer",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "farmer.farmer_name",
+   "fieldname": "farmer_name",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "label": "Farmer Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "farmer.name",
+   "fieldname": "farmer_code",
+   "fieldtype": "Data",
+   "label": "Farmer Code",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "farmer.mobile",
+   "fieldname": "mobile_no",
+   "fieldtype": "Data",
+   "label": "Mobile No",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_farmer",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "farmer.email",
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "farmer.village",
+   "fieldname": "village",
+   "fieldtype": "Data",
+   "label": "Village",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "farmer.district",
+   "fieldname": "district",
+   "fieldtype": "Data",
+   "label": "District",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "farmer.state",
+   "fieldname": "state",
+   "fieldtype": "Data",
+   "label": "State",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "land_section",
+   "fieldtype": "Section Break",
+   "label": "Land Details"
+  },
+  {
+   "fetch_from": "farmer.total_land_area",
+   "fieldname": "total_land_area",
+   "fieldtype": "Float",
+   "label": "Total Land Area (Farmer)",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "contract_land_area",
+   "fieldtype": "Float",
+   "label": "Contract Land Area",
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "default": "Acre",
+   "fieldname": "land_uom",
+   "fieldtype": "Link",
+   "label": "Land UOM",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "column_break_land",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "soil_type",
+   "fieldtype": "Select",
+   "label": "Soil Type",
+   "options": "\nAlluvial\nBlack Soil\nRed Soil\nLaterite\nMountain Soil\nSandy\nClay\nLoamy"
+  },
+  {
+   "fieldname": "irrigation_type",
+   "fieldtype": "Select",
+   "label": "Irrigation Type",
+   "options": "\nRainFed\nDrip Irrigation\nSprinkler\nFlood Irrigation\nBorewell\nCanal"
+  },
+  {
+   "fieldname": "land_location",
+   "fieldtype": "Small Text",
+   "label": "Land Location Details"
+  },
+  {
+   "fieldname": "party_section",
+   "fieldtype": "Section Break",
+   "label": "Party Links"
+  },
+  {
+   "fetch_from": "farmer.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_party",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "farmer.supplier",
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "supplier.supplier_name",
+   "fieldname": "supplier_name",
+   "fieldtype": "Data",
+   "label": "Supplier Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "product_section",
+   "fieldtype": "Section Break",
+   "label": "Product Information"
+  },
+  {
+   "fieldname": "product_category",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Product Category",
+   "options": "Item Group"
+  },
+  {
+   "bold": 1,
+   "fieldname": "primary_product",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Primary Product",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "variety",
+   "fieldtype": "Data",
+   "label": "Variety/Cultivar"
+  },
+  {
+   "fieldname": "column_break_product",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "expected_total_quantity",
+   "fieldtype": "Float",
+   "label": "Expected Total Quantity",
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "fieldname": "quantity_uom",
+   "fieldtype": "Link",
+   "label": "Quantity UOM",
+   "options": "UOM",
+   "reqd": 1
+  },
+  {
+   "fieldname": "expected_yield_per_acre",
+   "fieldtype": "Float",
+   "label": "Expected Yield Per Acre",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "crop_config_section",
+   "fieldtype": "Section Break",
+   "label": "Crop Configuration"
+  },
+  {
+   "fieldname": "crop_cycle_type",
+   "fieldtype": "Select",
+   "label": "Crop Cycle Type",
+   "options": "\nSingle Harvest\nMultiple Harvest\nContinuous Harvest",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.crop_cycle_type != 'Single Harvest'",
+   "fieldname": "harvest_frequency",
+   "fieldtype": "Select",
+   "label": "Harvest Frequency",
+   "options": "\nWeekly\nBi-Weekly\nMonthly\nQuarterly (Every 3 Months)\nCustom"
+  },
+  {
+   "depends_on": "eval:doc.crop_cycle_type != 'Single Harvest'",
+   "description": "Days between each harvest (e.g., 90 for quarterly)",
+   "fieldname": "harvest_cycle_days",
+   "fieldtype": "Int",
+   "label": "Harvest Cycle (Days)"
+  },
+  {
+   "fieldname": "column_break_crop",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sowing_season",
+   "fieldtype": "Select",
+   "label": "Sowing Season",
+   "options": "\nKharif (Monsoon)\nRabi (Winter)\nZaid (Summer)\nYear Round"
+  },
+  {
+   "fieldname": "first_harvest_date",
+   "fieldtype": "Date",
+   "label": "First Expected Harvest Date"
+  },
+  {
+   "depends_on": "eval:doc.crop_cycle_type != 'Single Harvest'",
+   "fieldname": "total_expected_harvests",
+   "fieldtype": "Int",
+   "label": "Total Expected Harvests"
+  },
+  {
+   "fieldname": "harvest_schedule_section",
+   "fieldtype": "Section Break",
+   "label": "Crop Harvest Schedule"
+  },
+  {
+   "fieldname": "crop_harvest_schedule",
+   "fieldtype": "Table",
+   "label": "Harvest Schedule",
+   "options": "Crop Harvest Schedule"
+  },
+  {
+   "fieldname": "totals_section",
+   "fieldtype": "Section Break",
+   "label": "Contract Summary"
+  },
+  {
+   "fieldname": "total_contract_value",
+   "fieldtype": "Currency",
+   "label": "Total Contract Value",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_totals",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_quantity_contracted",
+   "fieldtype": "Float",
+   "label": "Total Quantity Contracted",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pricing_section",
+   "fieldtype": "Section Break",
+   "label": "Pricing Details"
+  },
+  {
+   "fieldname": "base_price_per_unit",
+   "fieldtype": "Currency",
+   "label": "Base Price Per Unit",
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "fieldname": "price_uom",
+   "fieldtype": "Link",
+   "label": "Price UOM",
+   "options": "UOM",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_pricing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Fixed",
+   "fieldname": "price_type",
+   "fieldtype": "Select",
+   "label": "Price Type",
+   "options": "Fixed\nMarket Linked\nVariable\nTiered"
+  },
+  {
+   "depends_on": "eval:doc.price_type=='Market Linked'",
+   "fieldname": "market_linked",
+   "fieldtype": "Small Text",
+   "label": "Market Linkage Details"
+  },
+  {
+   "fieldname": "payment_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Terms"
+  },
+  {
+   "fieldname": "payment_terms",
+   "fieldtype": "Link",
+   "label": "Payment Terms Template",
+   "options": "Payment Terms Template"
+  },
+  {
+   "fieldname": "payment_cycle",
+   "fieldtype": "Select",
+   "label": "Payment Cycle",
+   "options": "On Delivery\nWeekly\nBi-Weekly\nMonthly\nOn Harvest\nMilestone Based"
+  },
+  {
+   "fieldname": "advance_percentage",
+   "fieldtype": "Percent",
+   "label": "Advance Payment %"
+  },
+  {
+   "fieldname": "column_break_payment",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "payment_method",
+   "fieldtype": "Select",
+   "label": "Payment Method",
+   "options": "Bank Transfer\nCash\nCheque\nUPI\nMobile Wallet"
+  },
+  {
+   "fieldname": "bank_account",
+   "fieldtype": "Link",
+   "label": "Bank Account",
+   "options": "Bank Account"
+  },
+  {
+   "fieldname": "logistics_section",
+   "fieldtype": "Section Break",
+   "label": "Logistics & Delivery"
+  },
+  {
+   "fieldname": "delivery_location",
+   "fieldtype": "Link",
+   "label": "Delivery Location",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "delivery_terms",
+   "fieldtype": "Select",
+   "label": "Delivery Terms",
+   "options": "Ex-Farm\nFOB\nCIF\nDelivered\nPickup"
+  },
+  {
+   "fieldname": "column_break_logistics",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "transport_responsibility",
+   "fieldtype": "Select",
+   "label": "Transport Responsibility",
+   "options": "Farmer\nCompany\nShared"
+  },
+  {
+   "fieldname": "storage_terms",
+   "fieldtype": "Small Text",
+   "label": "Storage Terms"
+  },
+  {
+   "fieldname": "terms_section",
+   "fieldtype": "Section Break",
+   "label": "Terms & Conditions"
+  },
+  {
+   "fieldname": "terms_and_conditions",
+   "fieldtype": "Text Editor",
+   "label": "Terms and Conditions"
+  },
+  {
+   "fieldname": "special_clauses",
+   "fieldtype": "Text Editor",
+   "label": "Special Clauses"
+  },
+  {
+   "fieldname": "column_break_terms",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "termination_clause",
+   "fieldtype": "Small Text",
+   "label": "Termination Clause"
+  },
+  {
+   "fieldname": "attachments_section",
+   "fieldtype": "Section Break",
+   "label": "Attachments"
+  },
+  {
+   "fieldname": "attachments",
+   "fieldtype": "Table",
+   "label": "Attachments",
+   "options": "Contract Attachment"
+  },
+  {
+   "fieldname": "footer_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Farmer Contract",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_footer",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "remember_last_selected_value": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "delivery_and_attachments_tab",
+   "fieldtype": "Tab Break",
+   "label": "Delivery & Attachments"
+  },
+  {
+   "fieldname": "terms_and_payments_tab",
+   "fieldtype": "Tab Break",
+   "label": "Terms & Payments"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-04-08 21:18:32.748863",
+ "modified_by": "Administrator",
+ "module": "AgroRize",
+ "name": "Farmer Contract",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Agriculture Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Agriculture User",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "farmer_name",
+ "track_changes": 1,
+ "track_seen": 1,
+ "track_views": 1
+}
