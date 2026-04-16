@@ -8,14 +8,10 @@
  "field_order": [
   "basic_section",
   "naming_series",
-  "contract_type",
-  "contract_status",
-  "company",
-  "column_break_1",
   "contract_date",
-  "start_date",
-  "end_date",
-  "total_duration_days",
+  "column_break_1",
+  "status",
+  "company",
   "farmer_section",
   "farmer",
   "farmer_name",
@@ -29,7 +25,7 @@
   "land_section",
   "total_land_area",
   "contract_land_area",
-  "land_uom",
+  "land_measurement",
   "column_break_land",
   "soil_type",
   "irrigation_type",
@@ -42,32 +38,28 @@
   "supplier_name",
   "product_section",
   "product_category",
-  "primary_product",
+  "product",
   "variety",
   "column_break_product",
   "expected_total_quantity",
-  "quantity_uom",
   "expected_yield_per_acre",
   "crop_config_section",
   "crop_cycle_type",
   "harvest_frequency",
   "harvest_cycle_days",
+  "total_expected_harvests",
   "column_break_crop",
   "sowing_season",
   "first_harvest_date",
-  "total_expected_harvests",
+  "end_harvest_date",
   "harvest_schedule_section",
   "crop_harvest_schedule",
   "pricing_section",
-  "base_price_per_unit",
-  "price_uom",
+  "base_price",
   "column_break_pricing",
-  "price_type",
-  "market_linked",
-  "totals_section",
+  "total_quantity",
+  "column_break_akah",
   "total_contract_value",
-  "column_break_totals",
-  "total_quantity_contracted",
   "footer_section",
   "amended_from",
   "column_break_footer",
@@ -82,17 +74,8 @@
   "attachments",
   "terms_and_payments_tab",
   "terms_section",
-  "terms_and_conditions",
-  "special_clauses",
-  "column_break_terms",
-  "termination_clause",
-  "payment_section",
-  "payment_terms",
-  "payment_cycle",
-  "advance_percentage",
-  "column_break_payment",
-  "payment_method",
-  "bank_account"
+  "terms",
+  "terms_and_conditions"
  ],
  "fields": [
   {
@@ -108,25 +91,6 @@
    "reqd": 1
   },
   {
-   "default": "Draft",
-   "fieldname": "contract_status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Contract Status",
-   "options": "Draft\nPending Approval\nActive\nOn Hold\nExpired\nTerminated\nCompleted",
-   "reqd": 1
-  },
-  {
-   "fieldname": "contract_type",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Contract Type",
-   "options": "Supply Contract\nBuy-Back Agreement\nContract Farming\nSeasonal Contract\nAnnual Contract\nMulti-Year Contract",
-   "reqd": 1
-  },
-  {
    "fieldname": "column_break_1",
    "fieldtype": "Column Break"
   },
@@ -138,26 +102,7 @@
    "reqd": 1
   },
   {
-   "fieldname": "start_date",
-   "fieldtype": "Date",
-   "in_list_view": 1,
-   "label": "Start Date",
-   "reqd": 1
-  },
-  {
-   "fieldname": "end_date",
-   "fieldtype": "Date",
-   "in_list_view": 1,
-   "label": "End Date",
-   "reqd": 1
-  },
-  {
-   "fieldname": "total_duration_days",
-   "fieldtype": "Int",
-   "label": "Total Duration (Days)",
-   "read_only": 1
-  },
-  {
+   "collapsible": 1,
    "fieldname": "farmer_section",
    "fieldtype": "Section Break",
    "label": "Farmer Details"
@@ -227,7 +172,6 @@
    "read_only": 1
   },
   {
-   "collapsible": 1,
    "fieldname": "land_section",
    "fieldtype": "Section Break",
    "label": "Land Details"
@@ -243,16 +187,10 @@
   {
    "fieldname": "contract_land_area",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "Contract Land Area",
    "precision": "2",
    "reqd": 1
-  },
-  {
-   "default": "Acre",
-   "fieldname": "land_uom",
-   "fieldtype": "Link",
-   "label": "Land UOM",
-   "options": "UOM"
   },
   {
    "fieldname": "column_break_land",
@@ -276,6 +214,7 @@
    "label": "Land Location Details"
   },
   {
+   "collapsible": 1,
    "fieldname": "party_section",
    "fieldtype": "Section Break",
    "label": "Party Links"
@@ -327,15 +266,6 @@
    "options": "Item Group"
   },
   {
-   "bold": 1,
-   "fieldname": "primary_product",
-   "fieldtype": "Link",
-   "in_standard_filter": 1,
-   "label": "Primary Product",
-   "options": "Item",
-   "reqd": 1
-  },
-  {
    "fieldname": "variety",
    "fieldtype": "Data",
    "label": "Variety/Cultivar"
@@ -349,13 +279,6 @@
    "fieldtype": "Float",
    "label": "Expected Total Quantity",
    "precision": "2",
-   "reqd": 1
-  },
-  {
-   "fieldname": "quantity_uom",
-   "fieldtype": "Link",
-   "label": "Quantity UOM",
-   "options": "UOM",
    "reqd": 1
   },
   {
@@ -374,15 +297,16 @@
    "fieldname": "crop_cycle_type",
    "fieldtype": "Select",
    "label": "Crop Cycle Type",
-   "options": "\nSingle Harvest\nMultiple Harvest\nContinuous Harvest",
+   "options": "\nSingle Harvest\nContinuous Harvest",
    "reqd": 1
   },
   {
+   "default": "Quarterly",
    "depends_on": "eval:doc.crop_cycle_type != 'Single Harvest'",
    "fieldname": "harvest_frequency",
    "fieldtype": "Select",
    "label": "Harvest Frequency",
-   "options": "\nWeekly\nBi-Weekly\nMonthly\nQuarterly (Every 3 Months)\nCustom"
+   "options": "\nWeekly\nBi-Weekly\nMonthly\nQuarterly\nHalf Yearly\nYearly"
   },
   {
    "depends_on": "eval:doc.crop_cycle_type != 'Single Harvest'",
@@ -424,25 +348,9 @@
    "options": "Crop Harvest Schedule"
   },
   {
-   "fieldname": "totals_section",
-   "fieldtype": "Section Break",
-   "label": "Contract Summary"
-  },
-  {
    "fieldname": "total_contract_value",
    "fieldtype": "Currency",
    "label": "Total Contract Value",
-   "precision": "2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_totals",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "total_quantity_contracted",
-   "fieldtype": "Float",
-   "label": "Total Quantity Contracted",
    "precision": "2",
    "read_only": 1
   },
@@ -452,73 +360,8 @@
    "label": "Pricing Details"
   },
   {
-   "fieldname": "base_price_per_unit",
-   "fieldtype": "Currency",
-   "label": "Base Price Per Unit",
-   "precision": "2",
-   "reqd": 1
-  },
-  {
-   "fieldname": "price_uom",
-   "fieldtype": "Link",
-   "label": "Price UOM",
-   "options": "UOM",
-   "reqd": 1
-  },
-  {
    "fieldname": "column_break_pricing",
    "fieldtype": "Column Break"
-  },
-  {
-   "default": "Fixed",
-   "fieldname": "price_type",
-   "fieldtype": "Select",
-   "label": "Price Type",
-   "options": "Fixed\nMarket Linked\nVariable\nTiered"
-  },
-  {
-   "depends_on": "eval:doc.price_type=='Market Linked'",
-   "fieldname": "market_linked",
-   "fieldtype": "Small Text",
-   "label": "Market Linkage Details"
-  },
-  {
-   "fieldname": "payment_section",
-   "fieldtype": "Section Break",
-   "label": "Payment Terms"
-  },
-  {
-   "fieldname": "payment_terms",
-   "fieldtype": "Link",
-   "label": "Payment Terms Template",
-   "options": "Payment Terms Template"
-  },
-  {
-   "fieldname": "payment_cycle",
-   "fieldtype": "Select",
-   "label": "Payment Cycle",
-   "options": "On Delivery\nWeekly\nBi-Weekly\nMonthly\nOn Harvest\nMilestone Based"
-  },
-  {
-   "fieldname": "advance_percentage",
-   "fieldtype": "Percent",
-   "label": "Advance Payment %"
-  },
-  {
-   "fieldname": "column_break_payment",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "payment_method",
-   "fieldtype": "Select",
-   "label": "Payment Method",
-   "options": "Bank Transfer\nCash\nCheque\nUPI\nMobile Wallet"
-  },
-  {
-   "fieldname": "bank_account",
-   "fieldtype": "Link",
-   "label": "Bank Account",
-   "options": "Bank Account"
   },
   {
    "fieldname": "logistics_section",
@@ -558,23 +401,11 @@
    "label": "Terms & Conditions"
   },
   {
+   "fetch_from": "terms.terms",
    "fieldname": "terms_and_conditions",
    "fieldtype": "Text Editor",
-   "label": "Terms and Conditions"
-  },
-  {
-   "fieldname": "special_clauses",
-   "fieldtype": "Text Editor",
-   "label": "Special Clauses"
-  },
-  {
-   "fieldname": "column_break_terms",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "termination_clause",
-   "fieldtype": "Small Text",
-   "label": "Termination Clause"
+   "label": "Terms and Conditions",
+   "read_only": 1
   },
   {
    "fieldname": "attachments_section",
@@ -620,14 +451,77 @@
   {
    "fieldname": "terms_and_payments_tab",
    "fieldtype": "Tab Break",
-   "label": "Terms & Payments"
+   "label": "Terms"
+  },
+  {
+   "description": "In Kg",
+   "fieldname": "total_quantity",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Total Quantity",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_akah",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Per Kg Price",
+   "fieldname": "base_price",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Base Price",
+   "non_negative": 1,
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_harvest_date",
+   "fieldtype": "Date",
+   "label": "End Expected Harvest Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "terms",
+   "fieldtype": "Link",
+   "label": "Terms",
+   "options": "Terms and Conditions"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nPending Approval\nActive\nOn Hold\nExpired\nTerminated\nCompleted",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "land_measurement",
+   "fieldtype": "Select",
+   "label": "Land Measurement",
+   "options": "\nBigha\nAcre",
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "product",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Product",
+   "options": "Item",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-04-08 21:18:32.748863",
+ "modified": "2026-04-16 16:50:52.321967",
  "modified_by": "Administrator",
  "module": "AgroRize",
  "name": "Farmer Contract",

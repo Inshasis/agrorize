@@ -12,58 +12,149 @@
   "column_break_mzlf",
   "actual_harvest_date",
   "actual_quantity",
-  "remark"
+  "remark",
+  "purchase_details_section",
+  "purchase_order",
+  "purchase_receipt",
+  "purchase_invoice",
+  "column_break_wlho",
+  "po_date",
+  "pr_date",
+  "pi_date",
+  "column_break_dvio",
+  "po_status",
+  "pr_status",
+  "pi_status"
  ],
  "fields": [
   {
    "fieldname": "harvest_date",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Harvest Date"
+   "label": "Harvest Date",
+   "read_only": 1
   },
   {
-   "description": "In KG",
+   "description": "In Tonne",
    "fieldname": "expected_quantity",
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Expected Quantity",
-   "precision": "2"
+   "precision": "2",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "harvest_status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Harvest Status",
-   "options": "Planned\nIn Progress\nDelayed\nCompleted"
+   "options": "Planned\nIn Progress\nDelayed\nCompleted",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_mzlf",
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "actual_harvest_date",
    "fieldtype": "Date",
-   "label": "Actual Harvest Date"
+   "in_list_view": 1,
+   "label": "Actual Harvest Date",
+   "read_only": 1
   },
   {
-   "description": "In KG",
+   "allow_on_submit": 1,
+   "description": "In Tonne",
    "fieldname": "actual_quantity",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "Actual Quantity",
-   "precision": "2"
+   "precision": "2",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "remark",
    "fieldtype": "Small Text",
    "in_list_view": 1,
-   "label": "Remark"
+   "label": "Remark",
+   "read_only": 1
+  },
+  {
+   "fieldname": "purchase_details_section",
+   "fieldtype": "Section Break",
+   "label": "Purchase Details"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "purchase_order",
+   "fieldtype": "Data",
+   "label": "Purchase Order"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "purchase_receipt",
+   "fieldtype": "Data",
+   "label": "Purchase Receipt"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "purchase_invoice",
+   "fieldtype": "Data",
+   "label": "Purchase invoice"
+  },
+  {
+   "fieldname": "column_break_wlho",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "po_date",
+   "fieldtype": "Date",
+   "label": "Purchase Order Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pr_date",
+   "fieldtype": "Date",
+   "label": "Purchase Receipt Date"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pi_date",
+   "fieldtype": "Date",
+   "label": "Purchase Invoice Date"
+  },
+  {
+   "fieldname": "column_break_dvio",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "po_status",
+   "fieldtype": "Data",
+   "label": "Purchase Order Status"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pr_status",
+   "fieldtype": "Data",
+   "label": "Purchase Receipt Status"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "pi_status",
+   "fieldtype": "Data",
+   "label": "Purchase Invoice Status"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-04-08 20:59:04.405871",
+ "modified": "2026-04-16 17:36:18.920871",
  "modified_by": "Administrator",
  "module": "AgroRize",
  "name": "Crop Harvest Schedule",
