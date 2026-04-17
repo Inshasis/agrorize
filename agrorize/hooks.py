@@ -254,20 +254,18 @@ api_methods = [
 # Fixtures
 # --------
 # Export fixtures to version control
-# fixtures = [
-#     {
-#         "dt": "Custom Field",
-#         "filters": [
-#             ["dt", "in", ["Lead"]]
-#         ]
-#     },
-#     {
-#         "dt": "Property Setter",
-#         "filters": [
-#             ["doc_type", "in", ["Lead"]]
-#         ]
-#     }
-# ]
+fixtures = [
+    {
+        "dt": "Farmer Document Type",
+        "filters": []
+    }
+    # {
+    #     "dt": "Property Setter",
+    #     "filters": [
+    #         ["doc_type", "in", ["Lead"]]
+    #     ]
+    # }
+]
 
 
 # bench --site agro export-fixtures --app agrorize

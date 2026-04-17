@@ -66,16 +66,22 @@
   "delivery_and_attachments_tab",
   "logistics_section",
   "delivery_location",
+  "column_break_wnwz",
   "delivery_terms",
   "column_break_logistics",
   "transport_responsibility",
-  "storage_terms",
   "attachments_section",
   "attachments",
   "terms_and_payments_tab",
   "terms_section",
   "terms",
-  "terms_and_conditions"
+  "terms_and_conditions",
+  "section_break_uhvi",
+  "subsidy_status",
+  "column_break_xwkj",
+  "subsidy_number",
+  "section_break_pbwd",
+  "field_supervisor"
  ],
  "fields": [
   {
@@ -206,7 +212,7 @@
    "fieldname": "irrigation_type",
    "fieldtype": "Select",
    "label": "Irrigation Type",
-   "options": "\nRainFed\nDrip Irrigation\nSprinkler\nFlood Irrigation\nBorewell\nCanal"
+   "options": "\nRainFed\nDrip Irrigation\nSprinkler\nFlood Irrigation\nBorewell\nCanal\nMix"
   },
   {
    "fieldname": "land_location",
@@ -294,6 +300,7 @@
    "label": "Crop Configuration"
   },
   {
+   "default": "Continuous Harvest",
    "fieldname": "crop_cycle_type",
    "fieldtype": "Select",
    "label": "Crop Cycle Type",
@@ -375,6 +382,7 @@
    "options": "Warehouse"
   },
   {
+   "default": "Ex-Farm",
    "fieldname": "delivery_terms",
    "fieldtype": "Select",
    "label": "Delivery Terms",
@@ -385,15 +393,11 @@
    "fieldtype": "Column Break"
   },
   {
+   "default": "Company",
    "fieldname": "transport_responsibility",
    "fieldtype": "Select",
    "label": "Transport Responsibility",
    "options": "Farmer\nCompany\nShared"
-  },
-  {
-   "fieldname": "storage_terms",
-   "fieldtype": "Small Text",
-   "label": "Storage Terms"
   },
   {
    "fieldname": "terms_section",
@@ -451,7 +455,7 @@
   {
    "fieldname": "terms_and_payments_tab",
    "fieldtype": "Tab Break",
-   "label": "Terms"
+   "label": "More Details"
   },
   {
    "description": "In Kg",
@@ -515,13 +519,46 @@
    "label": "Product",
    "options": "Item",
    "reqd": 1
+  },
+  {
+   "fieldname": "section_break_uhvi",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "subsidy_status",
+   "fieldtype": "Select",
+   "label": "Subsidy Status",
+   "options": "\nNot Applied\nApplied\nApproved\nRejected"
+  },
+  {
+   "fieldname": "column_break_xwkj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "subsidy_number",
+   "fieldtype": "Data",
+   "label": "Subsidy Number"
+  },
+  {
+   "fieldname": "column_break_wnwz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_pbwd",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "field_supervisor",
+   "fieldtype": "Table",
+   "label": "Field Supervisor",
+   "options": "Field Supervisor"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-04-16 16:50:52.321967",
+ "modified": "2026-04-17 17:32:41.282532",
  "modified_by": "Administrator",
  "module": "AgroRize",
  "name": "Farmer Contract",

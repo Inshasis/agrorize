@@ -1,0 +1,65 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Farmer Document Type",
+  "document_type": "Aadhaar Card",
+  "modified": "2026-04-17 19:44:34.296369",
+  "name": "Aadhaar Card"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Farmer Document Type",
+  "document_type": "PAN Card",
+  "modified": "2026-04-17 19:44:40.659060",
+  "name": "PAN Card"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Farmer Document Type",
+  "document_type": "Voter ID",
+  "modified": "2026-04-17 19:44:46.846637",
+  "name": "Voter ID"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Farmer Document Type",
+  "document_type": "7/12 Utara",
+  "modified": "2026-04-17 19:45:03.300052",
+  "name": "7/12 Utara"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Farmer Document Type",
+  "document_type": "8A Certificate",
+  "modified": "2026-04-17 19:48:05.959907",
+  "name": "8A Certificate"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Farmer Document Type",
+  "document_type": "Bank Passbook",
+  "modified": "2026-04-17 19:48:30.684109",
+  "name": "Bank Passbook"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Farmer Document Type",
+  "document_type": "Soil Health Card",
+  "modified": "2026-04-17 19:48:49.773564",
+  "name": "Soil Health Card"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Farmer Document Type",
+  "document_type": "Irrigation Proof",
+  "modified": "2026-04-17 19:48:58.148810",
+  "name": "Irrigation Proof"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Farmer Document Type",
+  "document_type": "Driving License",
+  "modified": "2026-04-17 20:18:27.531137",
+  "name": "Driving License"
+ }
+]

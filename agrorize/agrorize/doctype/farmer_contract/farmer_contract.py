@@ -33,6 +33,7 @@ class FarmerContract(Document):
 		"""Called every time document is saved"""
 		self.validate_farmer_links()
 		self.validate_land_area()
+		self.validate_duplicate_contract()
 		self.validate_crop_configuration()
 		self.validate_harvest_frequency()
 		self.calculate_totals()
@@ -68,6 +69,48 @@ class FarmerContract(Document):
 		if self.contract_land_area and self.total_land_area:
 			if flt(self.contract_land_area) > flt(self.total_land_area):
 				pass  # Silent validation, no popup warning
+	
+	def validate_duplicate_contract(self):
+		"""
+		Prevent duplicate active contracts for same farmer and product
+		Only one active contract allowed per farmer-product combination
+		"""
+		if not self.farmer or not self.product:
+			return
+		
+		# Check for existing active contracts
+		filters = {
+			'farmer': self.farmer,
+			'product': self.product,
+			'status': ['in', ['Active', 'Pending Approval']],
+			'docstatus': ['!=', 2]  # Exclude cancelled
+		}
+		
+		# Exclude current document if updating
+		if not self.is_new():
+			filters['name'] = ['!=', self.name]
+		
+		existing = frappe.get_all(
+			'Farmer Contract',
+			filters=filters,
+			fields=['name', 'status', 'contract_date']
+		)
+		
+		if existing:
+			existing_contract = existing[0]
+			frappe.throw(_(
+				"Active contract already exists for Farmer <strong>{0}</strong> and Product <strong>{1}</strong>.<br><br>"
+				"Existing Contract: <strong>{2}</strong><br>"
+				"Status: <strong>{3}</strong><br>"
+				"Date: <strong>{4}</strong><br><br>"
+				"Please complete or terminate the existing contract before creating a new one."
+			).format(
+				self.farmer_name or self.farmer,
+				self.product,
+				existing_contract.name,
+				existing_contract.status,
+				existing_contract.contract_date
+			), title=_("Duplicate Contract Not Allowed"))
 	
 	def validate_crop_configuration(self):
 		"""Validate crop settings"""
@@ -124,7 +167,7 @@ class FarmerContract(Document):
 	
 	def validate_mandatory_fields(self):
 		"""Validate mandatory fields before submission"""
-		if not self.primary_product:
+		if not self.product:
 			frappe.throw(_("Primary Product is required"))
 		
 		if not self.base_price:
@@ -429,7 +472,7 @@ def get_contract_summary(contract_name):
 		"contract_date": doc.contract_date,
 		"farmer": doc.farmer_name,
 		"farmer_code": doc.farmer_code,
-		"product": doc.primary_product,
+		"product": doc.product,
 		"status": doc.status,
 		"first_harvest_date": doc.first_harvest_date,
 		"end_harvest_date": doc.end_harvest_date,
