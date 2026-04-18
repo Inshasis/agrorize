@@ -219,6 +219,7 @@
    "fieldname": "total_receivable",
    "fieldtype": "Currency",
    "label": "Total Receivable",
+   "precision": "2",
    "read_only": 1
   },
   {
@@ -227,6 +228,7 @@
    "fieldname": "total_payable",
    "fieldtype": "Currency",
    "label": "Total Payable",
+   "precision": "2",
    "read_only": 1
   },
   {
@@ -235,6 +237,7 @@
    "fieldname": "net_balance",
    "fieldtype": "Currency",
    "label": "Net Balance",
+   "precision": "2",
    "read_only": 1
   },
   {
@@ -318,7 +321,7 @@
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-18 19:04:33.226477",
+ "modified": "2026-04-18 19:20:20.506099",
  "modified_by": "Administrator",
  "module": "AgroRize",
  "name": "Farmer",
