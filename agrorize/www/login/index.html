@@ -1,0 +1,1347 @@
+<!--
+Copyright (c) 2026, Inshasis and contributors
+For license information, please see license.txt
+-->
+
+{% extends "templates/web.html" %}
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════
+   AGRORIZE COLOR TOKENS
+   Copyright (c) 2026, Inshasis and contributors
+   For license information, please see license.txt
+═══════════════════════════════════════════ */
+:root {
+  /* Primary Colors from Logo */
+  --agro-gold: #D4A72C;
+  --agro-gold-light: #E8C555;
+  --agro-gold-dark: #B8901F;
+  
+  --agro-green: #2D5F3F;
+  --agro-green-light: #3A7A52;
+  --agro-green-dark: #1F4229;
+  
+  --agro-teal: #1A4D3E;
+  --agro-emerald: #2C8063;
+  
+  /* Neutrals */
+  --agro-cream: #FAF8F3;
+  --agro-sand: #F5F1E8;
+  --agro-brown: #4A3C2A;
+  --agro-charcoal: #2A2419;
+  --agro-black: #0F0D08;
+  
+  /* Semantic */
+  --agro-success: #48A868;
+  --agro-warning: #E8A63D;
+  --agro-error: #D84848;
+  
+  /* Effects */
+  --agro-glass: rgba(250, 248, 243, 0.05);
+  --agro-glass-strong: rgba(250, 248, 243, 0.08);
+  --agro-shadow: rgba(15, 13, 8, 0.15);
+  --agro-glow-gold: rgba(212, 167, 44, 0.25);
+  --agro-glow-green: rgba(45, 95, 63, 0.25);
+}
+
+/* ═══════════════════════════════════════════
+   BASE RESET
+═══════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--agro-black);
+  color: var(--agro-cream);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.navbar, .web-footer {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════
+   ANIMATED BACKGROUND
+═══════════════════════════════════════════ */
+.bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(135deg, #0F0D08 0%, #1A1612 50%, #1A4D3E 100%);
+  overflow: hidden;
+}
+
+.bg-canvas::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 80%;
+  height: 120%;
+  background: radial-gradient(ellipse, rgba(45, 95, 63, 0.3) 0%, transparent 60%);
+  animation: pulse 8s ease-in-out infinite;
+}
+
+.bg-canvas::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -15%;
+  width: 70%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(212, 167, 44, 0.2) 0%, transparent 50%);
+  animation: pulse 10s ease-in-out infinite reverse;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1) translateY(0); opacity: 0.3; }
+  50% { transform: scale(1.1) translateY(-5%); opacity: 0.5; }
+}
+
+/* Floating particles */
+.particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  background: var(--agro-gold);
+  border-radius: 50%;
+  opacity: 0;
+  animation: float 15s ease-in-out infinite;
+}
+
+.particle:nth-child(1) { width: 4px; height: 4px; left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { width: 6px; height: 6px; left: 25%; animation-delay: 2s; }
+.particle:nth-child(3) { width: 3px; height: 3px; left: 40%; animation-delay: 4s; }
+.particle:nth-child(4) { width: 5px; height: 5px; left: 60%; animation-delay: 1s; }
+.particle:nth-child(5) { width: 4px; height: 4px; left: 75%; animation-delay: 3s; }
+.particle:nth-child(6) { width: 6px; height: 6px; left: 90%; animation-delay: 5s; }
+
+@keyframes float {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-20vh) scale(1); opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════
+   MAIN GRID LAYOUT
+═══════════════════════════════════════════ */
+.login-container {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100vh;
+  width: 100vw;
+  max-width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════
+   LEFT HERO SECTION
+═══════════════════════════════════════════ */
+.hero-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 3vh 3vw;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar but keep functionality */
+.hero-section::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+.hero-section {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Decorative pattern overlay */
+.hero-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: 
+    repeating-linear-gradient(0deg, var(--agro-gold) 0px, transparent 1px, transparent 40px),
+    repeating-linear-gradient(90deg, var(--agro-gold) 0px, transparent 1px, transparent 40px);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: min(540px, 90%);
+  text-align: center;
+}
+
+/* Logo section */
+.hero-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 1.5vh, 18px);
+  margin-bottom: clamp(30px, 4vh, 45px);
+  animation: fadeSlideDown 0.8s ease-out;
+}
+
+.hero-logo img {
+  height: clamp(65px, 8vh, 80px);
+  width: auto;
+  max-width: 90%;
+  filter: drop-shadow(0 6px 24px rgba(212, 167, 44, 0.4));
+  transition: transform 0.3s ease;
+}
+
+.hero-logo img:hover {
+  transform: scale(1.05);
+}
+
+.hero-logo-divider {
+  width: clamp(70px, 10vw, 100px);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--agro-gold), transparent);
+  margin: 4px 0;
+}
+
+.hero-logo-tagline {
+  font-size: clamp(9px, 0.75vw, 11px);
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--agro-gold);
+  opacity: 0.8;
+}
+
+/* Main headline */
+.hero-headline {
+  margin-bottom: clamp(25px, 3vh, 35px);
+  animation: fadeSlideUp 0.8s 0.2s ease-out both;
+}
+
+.hero-headline h1 {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(32px, 3.5vw, 44px);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--agro-cream);
+  margin-bottom: clamp(12px, 1.5vh, 18px);
+  letter-spacing: -0.5px;
+}
+
+.hero-headline h1 .highlight {
+  background: linear-gradient(135deg, var(--agro-gold) 0%, var(--agro-gold-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  display: inline-block;
+}
+
+.hero-tagline {
+  font-size: clamp(13px, 1.1vw, 15px);
+  line-height: 1.5;
+  color: rgba(250, 248, 243, 0.7);
+  font-weight: 300;
+  letter-spacing: 0.3px;
+  max-width: 95%;
+  margin: 0 auto;
+}
+
+/* Feature cards */
+.hero-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(12px, 1.2vw, 18px);
+  margin-top: clamp(25px, 3vh, 35px);
+  animation: fadeSlideUp 0.8s 0.4s ease-out both;
+}
+
+.feature-card {
+  background: rgba(45, 95, 63, 0.15);
+  backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(212, 167, 44, 0.3);
+  border-radius: clamp(12px, 1.2vw, 16px);
+  padding: clamp(20px, 2vh, 26px) clamp(14px, 1.5vw, 18px);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(212, 167, 44, 0.1) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--agro-gold);
+  box-shadow: 0 12px 32px rgba(212, 167, 44, 0.25);
+  background: rgba(45, 95, 63, 0.25);
+}
+
+.feature-icon {
+  width: clamp(44px, 4.5vw, 52px);
+  height: clamp(44px, 4.5vw, 52px);
+  background: linear-gradient(135deg, var(--agro-green) 0%, var(--agro-emerald) 100%);
+  border-radius: clamp(10px, 1vw, 14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto clamp(12px, 1.5vh, 16px);
+  font-size: clamp(20px, 2vw, 24px);
+  color: var(--agro-gold);
+  box-shadow: 0 6px 16px rgba(45, 95, 63, 0.3);
+  position: relative;
+  z-index: 1;
+}
+
+.feature-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(14px, 1.1vw, 16px);
+  font-weight: 600;
+  color: var(--agro-cream);
+  margin-bottom: clamp(6px, 0.8vh, 10px);
+  position: relative;
+  z-index: 1;
+}
+
+.feature-desc {
+  font-size: clamp(11px, 0.9vw, 13px);
+  line-height: 1.4;
+  color: rgba(250, 248, 243, 0.7);
+  font-weight: 300;
+  position: relative;
+  z-index: 1;
+}
+
+/* Bottom stats */
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: clamp(30px, 4vw, 50px);
+  margin-top: clamp(25px, 3vh, 35px);
+  animation: fadeSlideUp 0.8s 0.6s ease-out both;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stat-icon {
+  width: 10px;
+  height: 10px;
+  background: var(--agro-gold);
+  border-radius: 50%;
+  box-shadow: 0 0 14px var(--agro-glow-gold);
+  animation: blink 3s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.stat-value {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(22px, 2vw, 26px);
+  font-weight: 700;
+  color: var(--agro-gold);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: clamp(10px, 0.85vw, 12px);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: rgba(250, 248, 243, 0.5);
+}
+
+/* ═══════════════════════════════════════════
+   RIGHT FORM SECTION - NO GREEN BELT
+═══════════════════════════════════════════ */
+.form-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4vh 3vw;
+  background: rgba(15, 13, 8, 0.6);
+  backdrop-filter: blur(40px);
+  border-left: 1px solid rgba(212, 167, 44, 0.1);
+  overflow: hidden; /* Changed from overflow-y: auto to prevent scrollbar issues */
+}
+
+/* Remove scrollbar styles that might cause visual artifacts */
+.form-section::-webkit-scrollbar {
+  display: none;
+}
+
+.form-section {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.form-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, var(--agro-gold), transparent);
+  opacity: 0.6;
+}
+
+/* Decorative elements */
+.form-decoration {
+  position: absolute;
+  pointer-events: none;
+}
+
+.form-decoration.top-right {
+  top: clamp(25px, 3vh, 40px);
+  right: clamp(25px, 3vw, 40px);
+  width: clamp(60px, 7vw, 90px);
+  height: clamp(60px, 7vw, 90px);
+  border-top: 2px solid var(--agro-gold);
+  border-right: 2px solid var(--agro-gold);
+  opacity: 0.2;
+}
+
+.form-decoration.bottom-left {
+  bottom: clamp(25px, 3vh, 40px);
+  left: clamp(25px, 3vw, 40px);
+  width: clamp(60px, 7vw, 90px);
+  height: clamp(60px, 7vw, 90px);
+  border-bottom: 2px solid var(--agro-gold);
+  border-left: 2px solid var(--agro-gold);
+  opacity: 0.2;
+}
+
+/* Form container */
+.form-wrapper {
+  width: 100%;
+  max-width: min(400px, 90%);
+  position: relative;
+  z-index: 2;
+  animation: fadeSlideLeft 0.8s 0.3s ease-out both;
+}
+
+/* Form header */
+.form-header {
+  text-align: center;
+  margin-bottom: clamp(30px, 4vh, 40px);
+}
+
+.form-header h2 {
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 700;
+  color: var(--agro-cream);
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+
+.form-header p {
+  font-size: clamp(12px, 1vw, 14px);
+  color: rgba(250, 248, 243, 0.6);
+  font-weight: 300;
+  letter-spacing: 0.5px;
+}
+
+.form-divider {
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--agro-gold), transparent);
+  margin: clamp(14px, 2vh, 20px) auto;
+}
+
+/* Alert messages */
+.alert-message {
+  display: none;
+  align-items: flex-start;
+  gap: 12px;
+  padding: clamp(14px, 1.5vh, 16px) 18px;
+  border-radius: 12px;
+  margin-bottom: clamp(18px, 2.5vh, 24px);
+  font-size: clamp(12px, 1vw, 14px);
+  font-weight: 400;
+  animation: slideDown 0.3s ease-out;
+}
+
+.alert-message.error {
+  background: rgba(216, 72, 72, 0.1);
+  border: 1px solid rgba(216, 72, 72, 0.3);
+  color: #f28b8b;
+}
+
+.alert-message.locked {
+  background: rgba(232, 166, 61, 0.1);
+  border: 1px solid rgba(232, 166, 61, 0.3);
+  color: var(--agro-warning);
+}
+
+.alert-message i {
+  font-size: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.alert-message span {
+  flex: 1;
+  line-height: 1.5;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Form fields */
+.form-field {
+  margin-bottom: clamp(18px, 2.5vh, 24px);
+  animation: fadeSlideUp 0.8s ease-out both;
+}
+
+.form-field:nth-child(1) { animation-delay: 0.4s; }
+.form-field:nth-child(2) { animation-delay: 0.5s; }
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: clamp(11px, 0.9vw, 13px);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--agro-gold);
+  margin-bottom: clamp(8px, 1vh, 10px);
+}
+
+.field-label i {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.field-input-wrapper {
+  position: relative;
+}
+
+.field-input {
+  width: 100%;
+  background: var(--agro-glass);
+  border: 1.5px solid rgba(212, 167, 44, 0.15);
+  border-radius: 12px;
+  padding: clamp(14px, 1.6vh, 16px) clamp(45px, 5vw, 50px) clamp(14px, 1.6vh, 16px) clamp(18px, 2vw, 20px);
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(13px, 1.1vw, 15px);
+  font-weight: 400;
+  color: var(--agro-cream);
+  outline: none;
+  transition: all 0.3s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.field-input::placeholder {
+  color: rgba(250, 248, 243, 0.25);
+}
+
+.field-input:focus {
+  background: rgba(250, 248, 243, 0.08);
+  border-color: var(--agro-gold);
+  box-shadow: 0 0 0 4px rgba(212, 167, 44, 0.1);
+}
+
+.field-input.error {
+  border-color: var(--agro-error);
+  box-shadow: 0 0 0 4px rgba(216, 72, 72, 0.1);
+}
+
+.field-icon {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(250, 248, 243, 0.3);
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.field-icon:hover {
+  color: var(--agro-gold);
+}
+
+.field-hint {
+  display: none;
+  margin-top: 8px;
+  font-size: clamp(11px, 0.9vw, 12px);
+  color: var(--agro-error);
+  font-weight: 400;
+}
+
+/* Form meta row */
+.form-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: clamp(-6px, -0.8vh, -8px) 0 clamp(24px, 3vh, 32px);
+  animation: fadeSlideUp 0.8s 0.6s ease-out both;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.attempts-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: clamp(11px, 0.9vw, 12px);
+  color: rgba(250, 248, 243, 0.5);
+  transition: color 0.3s ease;
+}
+
+.attempts-badge.warning {
+  color: var(--agro-warning);
+}
+
+.attempts-badge .dot {
+  width: 6px;
+  height: 6px;
+  background: var(--agro-warning);
+  border-radius: 50%;
+  display: none;
+  flex-shrink: 0;
+}
+
+.attempts-badge.warning .dot {
+  display: block;
+  animation: blink 2s ease-in-out infinite;
+}
+
+.forgot-link {
+  font-size: clamp(11px, 0.95vw, 13px);
+  color: rgba(250, 248, 243, 0.6);
+  text-decoration: none;
+  font-weight: 400;
+  position: relative;
+  transition: color 0.3s ease;
+  white-space: nowrap;
+}
+
+.forgot-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--agro-gold);
+  transition: width 0.3s ease;
+}
+
+.forgot-link:hover {
+  color: var(--agro-gold);
+}
+
+.forgot-link:hover::after {
+  width: 100%;
+}
+
+/* Submit button */
+.submit-btn {
+  width: 100%;
+  position: relative;
+  padding: clamp(16px, 2vh, 18px) clamp(28px, 3vw, 32px);
+  background: linear-gradient(135deg, var(--agro-green) 0%, var(--agro-emerald) 100%);
+  border: none;
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(12px, 1vw, 14px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--agro-cream);
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  animation: fadeSlideUp 0.8s 0.7s ease-out both;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--agro-gold) 0%, var(--agro-gold-light) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.submit-btn:hover::before {
+  opacity: 1;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(45, 95, 63, 0.4);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btn-spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(250, 248, 243, 0.3);
+  border-top-color: var(--agro-cream);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.submit-btn.loading .btn-label {
+  display: none;
+}
+
+.submit-btn.loading .btn-spinner {
+  display: block;
+}
+
+/* Footer */
+.form-footer {
+  text-align: center;
+  margin-top: clamp(24px, 3vh, 32px);
+  padding-top: clamp(18px, 2.5vh, 24px);
+  border-top: 1px solid rgba(212, 167, 44, 0.1);
+  font-size: clamp(10px, 0.85vw, 11px);
+  color: rgba(250, 248, 243, 0.4);
+  animation: fadeSlideUp 0.8s 0.8s ease-out both;
+}
+
+.form-footer a {
+  color: var(--agro-gold);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.form-footer a:hover {
+  color: var(--agro-gold-light);
+}
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════ */
+@keyframes fadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeSlideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE DESIGN
+═══════════════════════════════════════════ */
+
+/* Large laptops */
+@media (min-width: 1366px) and (max-width: 1920px) {
+  .hero-content {
+    max-width: 520px;
+  }
+}
+
+/* Standard laptops */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .hero-section {
+    padding: 2.5vh 2.5vw;
+  }
+  
+  .form-section {
+    padding: 3.5vh 2.5vw;
+  }
+  
+  .hero-content {
+    max-width: 500px;
+  }
+}
+
+/* Tablets */
+@media (max-width: 1023px) {
+  html {
+    overflow: auto;
+  }
+  
+  body {
+    overflow: auto;
+  }
+  
+  .login-container {
+    grid-template-columns: 1fr;
+    min-height: 100vh;
+    height: auto;
+  }
+  
+  .hero-section {
+    display: none;
+  }
+  
+  .form-section {
+    border-left: none;
+    min-height: 100vh;
+    padding: 40px 32px;
+    overflow: visible;
+  }
+  
+  .form-section::before {
+    display: none;
+  }
+  
+  .form-wrapper {
+    max-width: 480px;
+  }
+  
+  .form-decoration.top-right,
+  .form-decoration.bottom-left {
+    display: none;
+  }
+}
+
+/* Mobile devices */
+@media (max-width: 767px) {
+  .form-section {
+    padding: 32px 24px;
+  }
+  
+  .form-wrapper {
+    max-width: 100%;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 479px) {
+  .form-section {
+    padding: 24px 20px;
+  }
+}
+
+/* Very small devices */
+@media (max-width: 359px) {
+  .form-section {
+    padding: 20px 16px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .field-input {
+    font-size: 16px;
+  }
+}
+</style>
+
+<!-- Background Canvas -->
+<div class="bg-canvas">
+  <div class="particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+</div>
+
+<!-- Main Container -->
+<div class="login-container">
+  
+  <!-- ══════════════════════════════════════
+       LEFT HERO SECTION
+  ══════════════════════════════════════ -->
+  <div class="hero-section">
+    <div class="hero-pattern"></div>
+    
+    <div class="hero-content">
+      <!-- Logo -->
+      <div class="hero-logo">
+        <img src="/assets/agrorize/img/agrorize_logo.png" alt="Agrorize">
+        <div class="hero-logo-divider"></div>
+        <div class="hero-logo-tagline">Farming Commitment</div>
+      </div>
+      
+      <!-- Main Headline -->
+      <div class="hero-headline">
+        <h1>
+          Empowering Farmers.<br>
+          <span class="highlight">Growing Together.</span>
+        </h1>
+        <p class="hero-tagline">
+          Join the future of contract farming with intelligent farm management, 
+          transparent partnerships, and sustainable growth solutions.
+        </p>
+      </div>
+      
+      <!-- Feature Cards -->
+      <div class="hero-features">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-seedling"></i>
+          </div>
+          <div class="feature-title">Smart Contracts</div>
+          <div class="feature-desc">Digital agreements ensuring fair partnerships</div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="feature-title">Real-time Analytics</div>
+          <div class="feature-desc">Track yields and market trends instantly</div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-handshake"></i>
+          </div>
+          <div class="feature-title">Direct Partnerships</div>
+          <div class="feature-desc">Connect farmers with verified buyers</div>
+        </div>
+      </div>
+      
+      <!-- Bottom Stats -->
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-icon"></div>
+          <div>
+            <div class="stat-value">5,200+</div>
+            <div class="stat-label">Active Farmers</div>
+          </div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-icon"></div>
+          <div>
+            <div class="stat-value">12K+</div>
+            <div class="stat-label">Acres Managed</div>
+          </div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-icon"></div>
+          <div>
+            <div class="stat-value">98%</div>
+            <div class="stat-label">Success Rate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ══════════════════════════════════════
+       RIGHT FORM SECTION
+  ══════════════════════════════════════ -->
+  <div class="form-section">
+    <div class="form-decoration top-right"></div>
+    <div class="form-decoration bottom-left"></div>
+    
+    <div class="form-wrapper">
+      
+      <!-- Form Header -->
+      <div class="form-header">
+        <h2>Welcome Back</h2>
+        <div class="form-divider"></div>
+        <p>Access your farming dashboard</p>
+      </div>
+      
+      <!-- Alert Messages -->
+      <div class="alert-message locked" id="lockedAlert">
+        <i class="fas fa-shield-halved"></i>
+        <span id="lockedMessage">Account temporarily locked.</span>
+      </div>
+      
+      <div class="alert-message error" id="errorAlert">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span id="errorMessage">Invalid credentials. Please try again.</span>
+      </div>
+      
+      <!-- Username Field -->
+      <div class="form-field">
+        <label class="field-label" for="username">
+          <i class="fas fa-user"></i>
+          Username or Email
+        </label>
+        <div class="field-input-wrapper">
+          <input 
+            type="text" 
+            id="username" 
+            class="field-input" 
+            placeholder="Enter your username or email"
+            autocomplete="username"
+            spellcheck="false"
+          >
+          <i class="fas fa-user field-icon"></i>
+        </div>
+        <div class="field-hint" id="usernameHint">Username is required.</div>
+      </div>
+      
+      <!-- Password Field -->
+      <div class="form-field">
+        <label class="field-label" for="password">
+          <i class="fas fa-lock"></i>
+          Password
+        </label>
+        <div class="field-input-wrapper">
+          <input 
+            type="password" 
+            id="password" 
+            class="field-input" 
+            placeholder="Enter your password"
+            autocomplete="current-password"
+          >
+          <i class="fas fa-eye-slash field-icon" id="togglePassword"></i>
+        </div>
+        <div class="field-hint" id="passwordHint">Password is required.</div>
+      </div>
+      
+      <!-- Meta Row -->
+      <div class="form-meta">
+        <div class="attempts-badge" id="attemptsBadge">
+          <span class="dot"></span>
+          <span id="attemptsText"></span>
+        </div>
+        <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+      </div>
+      
+      <!-- Submit Button -->
+      <button class="submit-btn" id="loginButton" type="button">
+        <div class="btn-content">
+          <span class="btn-label">
+            Sign In
+            <i class="fas fa-arrow-right"></i>
+          </span>
+          <span class="btn-spinner"></span>
+        </div>
+      </button>
+      
+      <!-- Footer -->
+      <div class="form-footer">
+        <p>
+          Copyright &copy; 2026 
+          <a href="https://www.inshasis.com/" target="_blank" rel="noopener">Inshasis Technologies</a> 
+          — All Rights Reserved
+        </p>
+      </div>
+      
+    </div>
+  </div>
+  
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+/* ═══════════════════════════════════════════
+   COPYRIGHT NOTICE
+   Copyright (c) 2026, Inshasis and contributors
+   For license information, please see license.txt
+═══════════════════════════════════════════ */
+
+const SECURITY_CONFIG = {
+  MAX_ATTEMPTS: 5,
+  LOCKOUT_DURATION: 15 * 60 * 1000,
+  STORAGE_KEY: 'agrorize_login_security'
+};
+
+function getSecurityData() {
+  try {
+    const data = localStorage.getItem(SECURITY_CONFIG.STORAGE_KEY);
+    return data ? JSON.parse(data) : { attempts: 0, lockoutUntil: null };
+  } catch (error) {
+    return { attempts: 0, lockoutUntil: null };
+  }
+}
+
+function setSecurityData(data) {
+  localStorage.setItem(SECURITY_CONFIG.STORAGE_KEY, JSON.stringify(data));
+}
+
+function clearSecurityData() {
+  localStorage.removeItem(SECURITY_CONFIG.STORAGE_KEY);
+}
+
+function getLockoutStatus() {
+  const data = getSecurityData();
+  if (data.lockoutUntil && Date.now() < data.lockoutUntil) {
+    return data.lockoutUntil;
+  }
+  if (data.lockoutUntil) {
+    clearSecurityData();
+  }
+  return false;
+}
+
+function sanitizeInput(input) {
+  return input.replace(/<[^>]*>/g, '').trim();
+}
+
+function showError(message) {
+  $('#errorMessage').text(message);
+  $('#errorAlert').css('display', 'flex').hide().fadeIn(200);
+  $('#lockedAlert').hide();
+}
+
+function showLockout(lockoutUntil) {
+  const minutes = Math.max(1, Math.ceil((lockoutUntil - Date.now()) / 60000));
+  const message = `Too many failed attempts. Account locked for ${minutes} minute${minutes > 1 ? 's' : ''}.`;
+  $('#lockedMessage').text(message);
+  $('#lockedAlert').css('display', 'flex').fadeIn(200);
+  $('#errorAlert').hide();
+  disableForm(true);
+}
+
+function disableForm(disabled) {
+  $('#loginButton').prop('disabled', disabled);
+  $('#username, #password').prop('disabled', disabled);
+}
+
+function setLoading(isLoading) {
+  if (isLoading) {
+    $('#loginButton').addClass('loading').prop('disabled', true);
+  } else {
+    $('#loginButton').removeClass('loading').prop('disabled', false);
+  }
+}
+
+function updateAttemptsDisplay() {
+  const data = getSecurityData();
+  if (!data.attempts) {
+    $('#attemptsBadge').removeClass('warning');
+    $('#attemptsText').text('');
+    return;
+  }
+  
+  const remaining = SECURITY_CONFIG.MAX_ATTEMPTS - data.attempts;
+  $('#attemptsText').text(`${remaining} attempt${remaining !== 1 ? 's' : ''} remaining`);
+  $('#attemptsBadge').toggleClass('warning', remaining <= 2);
+}
+
+function clearFieldErrors() {
+  $('#usernameHint, #passwordHint').hide();
+  $('#username, #password').removeClass('error');
+}
+
+$(document).ready(function() {
+  $('.navbar, .web-footer').hide();
+  
+  if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+    $('input[type="text"], input[type="password"]').css('font-size', '16px');
+  }
+  
+  const lockoutUntil = getLockoutStatus();
+  if (lockoutUntil) {
+    showLockout(lockoutUntil);
+  } else {
+    updateAttemptsDisplay();
+  }
+  
+  $('#togglePassword').on('click', function() {
+    const passwordField = $('#password');
+    const isPassword = passwordField.attr('type') === 'password';
+    passwordField.attr('type', isPassword ? 'text' : 'password');
+    $(this).toggleClass('fa-eye-slash fa-eye');
+  });
+  
+  $('#username').on('input', function() {
+    $('#username').removeClass('error');
+    $('#usernameHint').hide();
+    $('#errorAlert').fadeOut(130);
+  });
+  
+  $('#password').on('input', function() {
+    $('#password').removeClass('error');
+    $('#passwordHint').hide();
+    $('#errorAlert').fadeOut(130);
+  });
+  
+  $('#username, #password').on('keydown', function(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      $('#loginButton').trigger('click');
+    }
+  });
+  
+  $('#loginButton').on('click', function() {
+    const lockoutUntil = getLockoutStatus();
+    if (lockoutUntil) {
+      showLockout(lockoutUntil);
+      return;
+    }
+    
+    clearFieldErrors();
+    $('#errorAlert').fadeOut(100);
+    
+    const username = sanitizeInput($('#username').val());
+    const password = $('#password').val();
+    
+    let isValid = true;
+    
+    if (!username) {
+      $('#usernameHint').fadeIn(180);
+      $('#username').addClass('error').focus();
+      isValid = false;
+    }
+    
+    if (!password) {
+      $('#passwordHint').fadeIn(180);
+      $('#password').addClass('error');
+      if (isValid) $('#password').focus();
+      isValid = false;
+    }
+    
+    if (!isValid) return;
+    
+    setLoading(true);
+    
+    frappe.call({
+      method: 'agrorize.www.login.api.login',
+      args: {
+        usr: username,
+        pwd: password
+      },
+      callback: function(response) {
+        setLoading(false);
+        
+        if (response?.message?.status === 'success') {
+          clearSecurityData();
+          
+          $('#loginButton')
+            .css({
+              background: 'linear-gradient(135deg, #48A868, #5ec47a)',
+              color: '#fff'
+            })
+            .find('.btn-content')
+            .html('<i class="fas fa-check" style="margin-right: 8px;"></i>Welcome to Agrorize');
+          
+          setTimeout(function() {
+            window.location.href = '/app';
+          }, 750);
+          
+        } else {
+          let securityData = getSecurityData();
+          securityData.attempts = (securityData.attempts || 0) + 1;
+          
+          if (securityData.attempts >= SECURITY_CONFIG.MAX_ATTEMPTS) {
+            securityData.lockoutUntil = Date.now() + SECURITY_CONFIG.LOCKOUT_DURATION;
+            setSecurityData(securityData);
+            showLockout(securityData.lockoutUntil);
+            return;
+          }
+          
+          setSecurityData(securityData);
+          updateAttemptsDisplay();
+          
+          const errorMessage = response?.message?.message || 'Invalid credentials. Please try again.';
+          showError(errorMessage);
+          
+          $('#password').val('').focus();
+        }
+      },
+      error: function() {
+        setLoading(false);
+        showError('Network error — please check your connection and try again.');
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

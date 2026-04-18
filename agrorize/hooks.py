@@ -258,6 +258,10 @@ fixtures = [
     {
         "dt": "Farmer Document Type",
         "filters": []
+    },
+    {
+        "dt": "Custom HTML Block",
+        "filters": []
     }
     # {
     #     "dt": "Property Setter",
