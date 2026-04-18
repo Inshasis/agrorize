@@ -12,12 +12,6 @@
   "column_break_1",
   "customer",
   "supplier",
-  "balance_section",
-  "total_payable",
-  "column_break_4",
-  "total_receivable",
-  "column_break_meum",
-  "net_balance",
   "banking_section",
   "bank_name",
   "account_number",
@@ -40,6 +34,13 @@
   "territory",
   "section_break_dszw",
   "document",
+  "account_tab",
+  "balance_section",
+  "total_payable",
+  "column_break_4",
+  "total_receivable",
+  "column_break_meum",
+  "net_balance",
   "more_details_tab",
   "sales_section",
   "company",
@@ -52,7 +53,8 @@
   "column_break_ogph",
   "delivery_note",
   "column_break_pqqi",
-  "sales_invoice"
+  "sales_invoice",
+  "dashboard_tab"
  ],
  "fields": [
   {
@@ -206,8 +208,7 @@
   },
   {
    "fieldname": "balance_section",
-   "fieldtype": "Section Break",
-   "hidden": 1
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "column_break_4",
@@ -219,7 +220,6 @@
    "fieldname": "total_receivable",
    "fieldtype": "Currency",
    "label": "Total Receivable",
-   "precision": "2",
    "read_only": 1
   },
   {
@@ -228,7 +228,6 @@
    "fieldname": "total_payable",
    "fieldtype": "Currency",
    "label": "Total Payable",
-   "precision": "2",
    "read_only": 1
   },
   {
@@ -237,8 +236,12 @@
    "fieldname": "net_balance",
    "fieldtype": "Currency",
    "label": "Net Balance",
-   "precision": "2",
    "read_only": 1
+  },
+  {
+   "fieldname": "account_tab",
+   "fieldtype": "Tab Break",
+   "label": "Account"
   },
   {
    "fieldname": "more_details_tab",
@@ -316,12 +319,18 @@
    "fieldtype": "Link",
    "label": "Sales Invoice",
    "options": "Sales Invoice"
+  },
+  {
+   "fieldname": "dashboard_tab",
+   "fieldtype": "Tab Break",
+   "label": "Dashboard",
+   "show_dashboard": 1
   }
  ],
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-18 19:20:20.506099",
+ "modified": "2026-04-18 17:43:38.878861",
  "modified_by": "Administrator",
  "module": "AgroRize",
  "name": "Farmer",

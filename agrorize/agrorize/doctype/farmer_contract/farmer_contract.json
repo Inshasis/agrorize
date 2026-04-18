@@ -93,7 +93,7 @@
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
-   "options": "FCON-.YYYY.-\nFCON-TULSI-.YYYY.-\nFCON-VEG-.YYYY.-\nFCON-GRAIN-.YYYY.-",
+   "options": "FCON-.YYYY.-",
    "reqd": 1
   },
   {
@@ -206,13 +206,15 @@
    "fieldname": "soil_type",
    "fieldtype": "Select",
    "label": "Soil Type",
-   "options": "\nAlluvial\nBlack Soil\nRed Soil\nLaterite\nMountain Soil\nSandy\nClay\nLoamy"
+   "options": "\nAlluvial\nBlack Soil\nRed Soil\nLaterite\nMountain Soil\nSandy\nClay\nLoamy",
+   "reqd": 1
   },
   {
    "fieldname": "irrigation_type",
    "fieldtype": "Select",
    "label": "Irrigation Type",
-   "options": "\nRainFed\nDrip Irrigation\nSprinkler\nFlood Irrigation\nBorewell\nCanal\nMix"
+   "options": "\nRainFed\nDrip Irrigation\nSprinkler\nFlood Irrigation\nBorewell\nCanal\nMix",
+   "reqd": 1
   },
   {
    "fieldname": "land_location",
@@ -304,7 +306,7 @@
    "fieldname": "crop_cycle_type",
    "fieldtype": "Select",
    "label": "Crop Cycle Type",
-   "options": "\nSingle Harvest\nContinuous Harvest",
+   "options": "Single Harvest\nContinuous Harvest",
    "reqd": 1
   },
   {
@@ -558,7 +560,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-04-17 17:32:41.282532",
+ "modified": "2026-04-18 16:08:19.509563",
  "modified_by": "Administrator",
  "module": "AgroRize",
  "name": "Farmer Contract",
