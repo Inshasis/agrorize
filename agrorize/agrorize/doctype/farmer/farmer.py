@@ -112,6 +112,72 @@ class Farmer(Document):
 
 
 @frappe.whitelist()
+def update_farmer_status(farmer, status, remark=None):
+    """Update farmer status and disable/enable linked Customer and Supplier"""
+    if not farmer:
+        frappe.throw("Farmer is required")
+    
+    if status not in ['Active', 'Inactive', 'Suspended']:
+        frappe.throw("Invalid status. Must be Active, Inactive, or Suspended")
+    
+    farmer_doc = frappe.get_doc("Farmer", farmer)
+    
+    # Update farmer status
+    farmer_doc.status = status
+    
+    # Add remark to a comment/note if provided
+    if remark and status in ['Inactive', 'Suspended']:
+        farmer_doc.add_comment('Comment', f'Status changed to {status}. Reason: {remark}')
+    
+    # Determine if customer and supplier should be disabled
+    should_disable = status in ['Inactive', 'Suspended']
+    
+    customer_disabled = False
+    supplier_disabled = False
+    
+    # Update Customer status
+    if farmer_doc.customer:
+        try:
+            customer = frappe.get_doc('Customer', farmer_doc.customer)
+            customer.disabled = 1 if should_disable else 0
+            customer.save(ignore_permissions=True)
+            customer_disabled = should_disable
+            
+            if should_disable:
+                customer.add_comment('Comment', f'Disabled due to Farmer status: {status}. {remark or ""}')
+            else:
+                customer.add_comment('Comment', f'Enabled due to Farmer status: {status}')
+                
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), 'Customer Status Update Error')
+    
+    # Update Supplier status
+    if farmer_doc.supplier:
+        try:
+            supplier = frappe.get_doc('Supplier', farmer_doc.supplier)
+            supplier.disabled = 1 if should_disable else 0
+            supplier.save(ignore_permissions=True)
+            supplier_disabled = should_disable
+            
+            if should_disable:
+                supplier.add_comment('Comment', f'Disabled due to Farmer status: {status}. {remark or ""}')
+            else:
+                supplier.add_comment('Comment', f'Enabled due to Farmer status: {status}')
+                
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), 'Supplier Status Update Error')
+    
+    # Save farmer document
+    farmer_doc.save(ignore_permissions=True)
+    
+    return {
+        "status": status,
+        "customer_disabled": customer_disabled,
+        "supplier_disabled": supplier_disabled
+    }
+
+
+@frappe.whitelist()
 def update_farmer_balance(farmer):
     """Update farmer balance from linked Customer and Supplier accounts"""
     if not farmer:
@@ -207,7 +273,7 @@ def validate_aadhaar_format(self):
             frappe.throw(_('Aadhaar number must be 12 digits'))
     return True
 
-# # Copyright (c) 2026, hidayatali and contributors
+# # Copyright (c) 2026, Inshasis and contributors
 # # For license information, please see license.txt
 
 # import frappe
@@ -314,52 +380,15 @@ def validate_aadhaar_format(self):
 #             frappe.throw(_('Error creating Supplier: {0}').format(str(e)))
     
 #     def validate(self):
-#         # self.calculate_balances()
 #         validate_mobile_format(self),
 #         validate_email_format(self),
-#         validate_pan_format(self)
-    
-    
-#     # def calculate_balances(self):
-        
-#         # """Calculate total receivable, payable, and net balance"""
-#         # if not self.customer and not self.supplier:
-#         #     return
-        
-#         # # Total Seed Purchase (Sales Invoices - Submitted)
-#         # if self.customer:
-#         #     total_sales = frappe.db.sql("""
-#         #         SELECT 
-#         #             COALESCE(SUM(outstanding_amount), 0) as outstanding,
-#         #             COALESCE(SUM(grand_total), 0) as total
-#         #         FROM `tabSales Invoice`
-#         #         WHERE customer = %s AND docstatus = 1
-#         #     """, self.customer, as_dict=1)[0]
-            
-#         #     self.total_seed_purchase = total_sales.total
-#         #     self.total_receivable = total_sales.outstanding
-        
-#         # # Total Crop Sold (Purchase Invoices - Submitted)
-#         # if self.supplier:
-#         #     total_purchase = frappe.db.sql("""
-#         #         SELECT 
-#         #             COALESCE(SUM(outstanding_amount), 0) as outstanding,
-#         #             COALESCE(SUM(grand_total), 0) as total
-#         #         FROM `tabPurchase Invoice`
-#         #         WHERE supplier = %s AND docstatus = 1
-#         #     """, self.supplier, as_dict=1)[0]
-            
-#         #     self.total_crop_sold = total_purchase.total
-#         #     self.total_payable = total_purchase.outstanding
-        
-#         # # Net Balance
-#         # # Positive = We owe farmer (payable > receivable)
-#         # # Negative = Farmer owes us (receivable > payable)
-#         # self.net_balance = self.total_payable - self.total_receivable
+#         validate_pan_format(self),
+#         validate_aadhaar_format(self)
 
 
 # @frappe.whitelist()
 # def update_farmer_balance(farmer):
+#     """Update farmer balance from linked Customer and Supplier accounts"""
 #     if not farmer:
 #         frappe.throw("Farmer is required")
 
@@ -404,8 +433,10 @@ def validate_aadhaar_format(self):
 #         "net": net_balance
 #     }
 
-# #Basic Detail Verify Code
+
+# # Basic Detail Validation Functions
 # def validate_mobile_format(self):
+#     """Validate mobile number format"""
 #     if self.mobile:
 #         mobile = self.mobile.strip()
         
@@ -424,6 +455,7 @@ def validate_aadhaar_format(self):
 
 
 # def validate_email_format(self):
+#     """Validate email address format"""
 #     if self.email:
 #         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 #         if not re.match(email_pattern, self.email):
@@ -432,6 +464,7 @@ def validate_aadhaar_format(self):
 
 
 # def validate_pan_format(self):
+#     """Validate PAN number format"""
 #     if self.pan_number:
 #         pan_pattern = r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$'
 #         if not re.match(pan_pattern, self.pan_number):
@@ -440,6 +473,7 @@ def validate_aadhaar_format(self):
 
 
 # def validate_aadhaar_format(self):
+#     """Validate Aadhaar number format"""
 #     if self.aadhaar_number:
 #         # Remove spaces and hyphens
 #         aadhaar = self.aadhaar_number.replace(' ', '').replace('-', '')
