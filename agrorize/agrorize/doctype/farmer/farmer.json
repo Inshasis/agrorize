@@ -46,13 +46,7 @@
   "image",
   "column_break_cjoo",
   "sales_person",
-  "status",
-  "section_break_ceyx",
-  "sales_order",
-  "column_break_ogph",
-  "delivery_note",
-  "column_break_pqqi",
-  "sales_invoice"
+  "status"
  ],
  "fields": [
   {
@@ -286,42 +280,12 @@
   {
    "fieldname": "column_break_meum",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "section_break_ceyx",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "sales_order",
-   "fieldtype": "Link",
-   "label": "Sales Order",
-   "options": "Sales Order"
-  },
-  {
-   "fieldname": "column_break_ogph",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "delivery_note",
-   "fieldtype": "Link",
-   "label": "Delivery Note",
-   "options": "Delivery Note"
-  },
-  {
-   "fieldname": "column_break_pqqi",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "sales_invoice",
-   "fieldtype": "Link",
-   "label": "Sales Invoice",
-   "options": "Sales Invoice"
   }
  ],
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-18 19:20:20.506099",
+ "modified": "2026-04-20 15:29:16.352352",
  "modified_by": "Administrator",
  "module": "AgroRize",
  "name": "Farmer",
