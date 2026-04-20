@@ -108,7 +108,22 @@ class Farmer(Document):
         validate_mobile_format(self),
         validate_email_format(self),
         validate_pan_format(self),
-        validate_aadhaar_format(self)
+        validate_aadhaar_format(self),
+        validate_village_postal_code(self)
+
+
+def validate_village_postal_code(self):
+    """Validate that village's postal code matches farmer's postal code"""
+    if self.village and self.postal_code:
+        village_postal_code = frappe.db.get_value('Village', self.village, 'postal_code')
+        
+        if village_postal_code and village_postal_code != self.postal_code:
+            frappe.throw(_(
+                'Village {0} belongs to Postal Code {1}, but you have selected Postal Code {2}. '
+                'Please select a village that matches the postal code.'
+            ).format(self.village, village_postal_code, self.postal_code))
+    
+    return True
 
 
 @frappe.whitelist()
