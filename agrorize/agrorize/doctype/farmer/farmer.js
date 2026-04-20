@@ -2,6 +2,19 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Farmer', {
+    onload: function(frm) {
+        // Set up village filter based on postal code on form load
+        if (frm.doc.postal_code) {
+            frm.set_query('village', function() {
+                return {
+                    filters: {
+                        'postal_code': frm.doc.postal_code
+                    }
+                };
+            });
+        }
+    },
+    
     refresh(frm) {
         // Avoid adding duplicate buttons on every refresh
         if (!frm.custom_balance_btn_added) {
@@ -73,6 +86,45 @@ frappe.ui.form.on('Farmer', {
     
     aadhaar_number: function(frm) {
         add_aadhaar_number_validation_indicator(frm);
+    },
+    
+    postal_code: function(frm) {
+        // Filter village based on selected postal code
+        if (frm.doc.postal_code) {
+            frm.set_query('village', function() {
+                return {
+                    filters: {
+                        'postal_code': frm.doc.postal_code
+                    }
+                };
+            });
+            
+            // Clear village if postal code changes
+            if (frm.doc.village) {
+                frappe.msgprint({
+                    title: __('Postal Code Changed'),
+                    message: __('Village field will be filtered based on new postal code. Please reselect village.'),
+                    indicator: 'blue'
+                });
+                frm.set_value('village', '');
+            }
+        } else {
+            // Remove filter if postal code is cleared
+            frm.set_query('village', function() {
+                return {};
+            });
+        }
+    },
+    
+    village: function(frm) {
+        // Auto-fill postal code when village is selected (if village has postal code)
+        if (frm.doc.village && !frm.doc.postal_code) {
+            frappe.db.get_value('Village', frm.doc.village, 'postal_code', (r) => {
+                if (r && r.postal_code) {
+                    frm.set_value('postal_code', r.postal_code);
+                }
+            });
+        }
     }
 });
 
@@ -360,6 +412,8 @@ function show_enhanced_balance_summary(frm) {
 }
 
 function show_status_dialog(frm) {
+    let current_status = frm.doc.status || 'Active';
+    
     let d = new frappe.ui.Dialog({
         title: __('Manage Farmer Status'),
         fields: [
@@ -368,17 +422,21 @@ function show_status_dialog(frm) {
                 fieldtype: 'Select',
                 label: __('Status'),
                 options: ['Active', 'Inactive', 'Suspended'],
-                default: frm.doc.status || 'Active',
+                default: current_status,
                 reqd: 1,
                 onchange: function() {
                     let status = d.get_value('status');
+                    let remark_field = d.fields_dict.remark;
+                    
                     // Show/hide remark field based on status
                     if (status === 'Inactive' || status === 'Suspended') {
-                        d.fields_dict.remark.$wrapper.show();
-                        d.set_df_property('remark', 'reqd', 1);
+                        remark_field.df.hidden = 0;
+                        remark_field.df.reqd = 1;
+                        remark_field.refresh();
                     } else {
-                        d.fields_dict.remark.$wrapper.hide();
-                        d.set_df_property('remark', 'reqd', 0);
+                        remark_field.df.hidden = 1;
+                        remark_field.df.reqd = 0;
+                        remark_field.refresh();
                         d.set_value('remark', '');
                     }
                 }
@@ -388,8 +446,8 @@ function show_status_dialog(frm) {
                 fieldtype: 'Small Text',
                 label: __('Remark'),
                 description: __('Please provide reason for status change'),
-                hidden: (frm.doc.status === 'Active' ? 1 : 0),
-                reqd: (frm.doc.status === 'Inactive' || frm.doc.status === 'Suspended' ? 1 : 0)
+                hidden: (current_status === 'Active' ? 1 : 0),
+                reqd: (current_status === 'Inactive' || current_status === 'Suspended' ? 1 : 0)
             },
             {
                 fieldname: 'info_section',
@@ -417,11 +475,6 @@ function show_status_dialog(frm) {
     });
     
     d.show();
-    
-    // Initial check for remark field visibility
-    if (frm.doc.status === 'Active') {
-        d.fields_dict.remark.$wrapper.hide();
-    }
 }
 
 function update_farmer_status(frm, new_status, remark) {
@@ -559,6 +612,13 @@ function format_currency(amount) {
 //                         });
 //                     }
 //                 });
+//             });
+//         }
+        
+//         // Add Manage Status button
+//         if (!frm.is_new()) {
+//             frm.add_custom_button(__('Manage Status'), () => {
+//                 show_status_dialog(frm);
 //             });
 //         }
         
@@ -879,6 +939,119 @@ function format_currency(amount) {
 //             introArea.css('position', 'relative');
 //         }, 100);
 //     }
+// }
+
+// function show_status_dialog(frm) {
+//     let d = new frappe.ui.Dialog({
+//         title: __('Manage Farmer Status'),
+//         fields: [
+//             {
+//                 fieldname: 'status',
+//                 fieldtype: 'Select',
+//                 label: __('Status'),
+//                 options: ['Active', 'Inactive', 'Suspended'],
+//                 default: frm.doc.status || 'Active',
+//                 reqd: 1,
+//                 onchange: function() {
+//                     let status = d.get_value('status');
+//                     // Show/hide remark field based on status
+//                     if (status === 'Inactive' || status === 'Suspended') {
+//                         d.fields_dict.remark.$wrapper.show();
+//                         d.set_df_property('remark', 'reqd', 1);
+//                     } else {
+//                         d.fields_dict.remark.$wrapper.hide();
+//                         d.set_df_property('remark', 'reqd', 0);
+//                         d.set_value('remark', '');
+//                     }
+//                 }
+//             },
+//             {
+//                 fieldname: 'remark',
+//                 fieldtype: 'Small Text',
+//                 label: __('Remark'),
+//                 description: __('Please provide reason for status change'),
+//                 hidden: (frm.doc.status === 'Active' ? 1 : 0),
+//                 reqd: (frm.doc.status === 'Inactive' || frm.doc.status === 'Suspended' ? 1 : 0)
+//             },
+//             {
+//                 fieldname: 'info_section',
+//                 fieldtype: 'Section Break',
+//                 label: __('Linked Records')
+//             },
+//             {
+//                 fieldname: 'info_html',
+//                 fieldtype: 'HTML',
+//                 options: `
+//                     <div style="padding: 10px; background: #f8f9fa; border-radius: 6px; margin-bottom: 10px;">
+//                         <p style="margin: 0; color: #6c757d; font-size: 13px;">
+//                             <strong>Note:</strong> Changing status to <strong>Inactive</strong> or <strong>Suspended</strong> 
+//                             will automatically disable the linked Customer and Supplier records.
+//                         </p>
+//                     </div>
+//                 `
+//             }
+//         ],
+//         primary_action_label: __('Update Status'),
+//         primary_action(values) {
+//             update_farmer_status(frm, values.status, values.remark);
+//             d.hide();
+//         }
+//     });
+    
+//     d.show();
+    
+//     // Initial check for remark field visibility
+//     if (frm.doc.status === 'Active') {
+//         d.fields_dict.remark.$wrapper.hide();
+//     }
+// }
+
+// function update_farmer_status(frm, new_status, remark) {
+//     frappe.call({
+//         method: 'agrorize.agrorize.doctype.farmer.farmer.update_farmer_status',
+//         args: {
+//             farmer: frm.doc.name,
+//             status: new_status,
+//             remark: remark || ''
+//         },
+//         freeze: true,
+//         freeze_message: __('Updating status...'),
+//         callback: function(r) {
+//             if (r.message) {
+//                 frm.reload_doc();
+                
+//                 let indicator_color = new_status === 'Active' ? 'green' : 
+//                                      new_status === 'Inactive' ? 'red' : 'orange';
+                
+//                 frappe.show_alert({
+//                     message: __('Status updated to {0}', [new_status]),
+//                     indicator: indicator_color
+//                 }, 5);
+                
+//                 if (r.message.customer_disabled || r.message.supplier_disabled) {
+//                     let msg = __('Linked records updated:');
+//                     if (r.message.customer_disabled) {
+//                         msg += '<br>• Customer disabled';
+//                     }
+//                     if (r.message.supplier_disabled) {
+//                         msg += '<br>• Supplier disabled';
+//                     }
+//                     frappe.msgprint({
+//                         title: __('Status Updated'),
+//                         message: msg,
+//                         indicator: 'blue'
+//                     });
+//                 }
+//             }
+//         },
+//         error: function(r) {
+//             frappe.msgprint({
+//                 title: __('Error'),
+//                 message: __('Failed to update status'),
+//                 indicator: 'red'
+//             });
+//         }
+//     });
 // }
 
 // function add_mobile_validation_indicator(frm) {

@@ -18,6 +18,18 @@
   "total_receivable",
   "column_break_meum",
   "net_balance",
+  "land_section",
+  "postal_code",
+  "column_break_elrz",
+  "village",
+  "section_break_updo",
+  "post",
+  "column_break_glze",
+  "taluka",
+  "column_break_2",
+  "district",
+  "column_break_nkob",
+  "state",
   "banking_section",
   "bank_name",
   "account_number",
@@ -31,13 +43,6 @@
   "soil_type",
   "column_break_lljo",
   "irrigation_type",
-  "land_section",
-  "village",
-  "taluka",
-  "column_break_2",
-  "district",
-  "state",
-  "territory",
   "section_break_dszw",
   "document",
   "more_details_tab",
@@ -75,12 +80,15 @@
    "label": "Email"
   },
   {
+   "bold": 1,
    "default": "Active",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Status",
    "options": "Active\nInactive\nSuspended",
+   "read_only": 1,
    "reqd": 1
   },
   {
@@ -120,33 +128,36 @@
   },
   {
    "fieldname": "village",
-   "fieldtype": "Data",
-   "label": "Village"
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Village",
+   "options": "Village",
+   "reqd": 1
   },
   {
+   "fetch_from": "village.taluka",
    "fieldname": "taluka",
    "fieldtype": "Data",
-   "label": "Taluka"
+   "label": "Taluka",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_2",
    "fieldtype": "Column Break"
   },
   {
+   "fetch_from": "village.district",
    "fieldname": "district",
    "fieldtype": "Data",
-   "label": "District"
+   "label": "District",
+   "read_only": 1
   },
   {
+   "fetch_from": "village.state",
    "fieldname": "state",
    "fieldtype": "Data",
-   "label": "State"
-  },
-  {
-   "fieldname": "territory",
-   "fieldtype": "Link",
-   "label": "Territory",
-   "options": "Territory"
+   "label": "State",
+   "read_only": 1
   },
   {
    "fieldname": "soil_type",
@@ -280,12 +291,42 @@
   {
    "fieldname": "column_break_meum",
    "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "village.post",
+   "fieldname": "post",
+   "fieldtype": "Data",
+   "label": "Post",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_elrz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_updo",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_glze",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_nkob",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "postal_code",
+   "fieldtype": "Link",
+   "label": "Postal Code",
+   "options": "Postal Code",
+   "reqd": 1
   }
  ],
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-20 15:29:16.352352",
+ "modified": "2026-04-20 18:36:42.728591",
  "modified_by": "Administrator",
  "module": "AgroRize",
  "name": "Farmer",
