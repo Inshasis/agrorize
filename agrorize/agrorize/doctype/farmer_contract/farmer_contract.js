@@ -15,7 +15,27 @@ frappe.ui.form.on('Farmer Contract', {
 		}
 		
 		show_contract_summary_card(frm);
+
+		//Farmer Filter - Active Only
+		frm.set_query('farmer', function() {
+            return {
+                filters: {
+                    'status': 'Active'
+                }
+            };
+        });
 	},
+
+	onload: function(frm) {
+        //Farmer Filter - Active Only
+        frm.fields_dict['farmer'].get_query = function(doc) {
+            return {
+                filters: {
+                    'status': 'Active'
+                }
+            };
+        };
+    },
 	
 	status: function(frm) {
 		if (frm.doc.status) {
