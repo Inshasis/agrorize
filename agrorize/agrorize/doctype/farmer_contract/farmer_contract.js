@@ -9,6 +9,7 @@ frappe.ui.form.on('Farmer Contract', {
 		
 		add_custom_styles();
 		add_status_buttons(frm);
+		add_seed_booking_button(frm);  // NEW: Add Seed Booking button
 		
 		if (frm.doc.docstatus === 1 && frm.doc.crop_harvest_schedule) {
 			add_harvest_buttons(frm);
@@ -16,33 +17,33 @@ frappe.ui.form.on('Farmer Contract', {
 		
 		show_contract_summary_card(frm);
 
-		//Farmer Filter - Active Only
+		// Farmer Filter - Active Only
 		frm.set_query('farmer', function() {
-            return {
-                filters: {
-                    'status': 'Active'
-                }
-            };
-        });
+			return {
+				filters: {
+					'status': 'Active'
+				}
+			};
+		});
 	},
 
 	onload: function(frm) {
-        //Farmer Filter - Active Only
-        frm.fields_dict['farmer'].get_query = function(doc) {
-            return {
-                filters: {
-                    'status': 'Active'
-                }
-            };
-        };
-    },
+		// Farmer Filter - Active Only
+		frm.fields_dict['farmer'].get_query = function(doc) {
+			return {
+				filters: {
+					'status': 'Active'
+				}
+			};
+		};
+	},
 	
 	status: function(frm) {
 		if (frm.doc.status) {
 			frm.page.set_indicator(frm.doc.status, get_status_color(frm.doc.status));
 		}
 	},
-	
+
 	harvest_frequency: function(frm) {
 		if (frm.doc.harvest_frequency) {
 			frappe.call({
@@ -58,6 +59,259 @@ frappe.ui.form.on('Farmer Contract', {
 		}
 	}
 });
+
+// ==================== CONTRACT ITEM CHILD TABLE ====================
+
+frappe.ui.form.on('Contract Item', {
+	item_group: function(frm, cdt, cdn) {
+		let row = locals[cdt][cdn];
+		
+		if (row.item_group) {
+			// Clear existing item selection when item group changes
+			frappe.model.set_value(cdt, cdn, 'item_code', '');
+			frappe.model.set_value(cdt, cdn, 'item_name', '');
+			frappe.model.set_value(cdt, cdn, 'variety', '');
+			
+			// Set query for item_code based on item_group
+			frm.fields_dict['contract_item'].grid.update_docfield_property(
+				'item_code', 
+				'get_query', 
+				function() {
+					return {
+						filters: {
+							'item_group': row.item_group,
+							'disabled': 0
+						}
+					};
+				}
+			);
+			
+			// Refresh the field to apply the filter
+			frm.fields_dict['contract_item'].grid.grid_rows_by_docname[cdn].refresh_field('item_code');
+		}
+	},
+	
+	item_code: function(frm, cdt, cdn) {
+		let row = locals[cdt][cdn];
+		
+		if (row.item_code) {
+			// Fetch item details
+			frappe.call({
+				method: 'frappe.client.get',
+				args: {
+					doctype: 'Item',
+					name: row.item_code
+				},
+				callback: function(r) {
+					if (r.message) {
+						frappe.model.set_value(cdt, cdn, 'item_name', r.message.item_name);
+						frappe.model.set_value(cdt, cdn, 'item_group', r.message.item_group);
+						
+						// Set variety if exists in item
+						if (r.message.variety) {
+							frappe.model.set_value(cdt, cdn, 'variety', r.message.variety);
+						}
+					}
+				}
+			});
+		}
+	}
+});
+
+// ==================== SEED BOOKING ====================
+
+function add_seed_booking_button(frm) {
+	// Only show if contract is submitted
+	if (frm.doc.docstatus !== 1) return;
+	
+	// If Sales Order already created, show "View Sales Order" button
+	if (frm.doc.sales_order) {
+		frm.add_custom_button(__('View Seed Booking'), function() {
+			frappe.set_route('Form', 'Sales Order', frm.doc.sales_order);
+		});
+	} else {
+		// Show "Seed Booking" button if no order created yet
+		frm.add_custom_button(__('Create Seed Booking'), function() {
+			show_seed_booking_dialog(frm);
+		});
+	}
+}
+
+function show_seed_booking_dialog(frm) {
+	// Fetch contract data
+	frappe.call({
+		method: 'get_seed_booking_data',
+		doc: frm.doc,
+		callback: function(r) {
+			if (!r.message) {
+				frappe.msgprint(__('Unable to load booking data'));
+				return;
+			}
+			
+			let data = r.message;
+			
+			// Prepare items table
+			let items_html = build_seed_booking_items_table(data.items);
+			
+			let d = new frappe.ui.Dialog({
+				title: __('Seed Booking'),
+				size: 'extra-large',
+				fields: [
+					{
+						fieldtype: 'HTML',
+						options: `
+							<div class="fc-harvest-entry" style="background: #f9fafb; padding: 14px 16px; border-radius: 6px; border: 1px solid #e5e7eb; margin-bottom: 16px;">
+								<div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px;">
+									<div>
+										<div class="fc-field-label" style="font-size: 10px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Customer</div>
+										<div style="font-size: 14px; font-weight: 600; color: #111827;">${data.customer_name}</div>
+									</div>
+									<div>
+										<div class="fc-field-label" style="font-size: 10px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Contract Date</div>
+										<div style="font-size: 14px; font-weight: 600; color: #111827;">${data.contract_date}</div>
+									</div>
+									<div>
+										<div class="fc-field-label" style="font-size: 10px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Booking Date</div>
+										<div style="font-size: 14px; font-weight: 600; color: #111827;">${frappe.datetime.get_today()}</div>
+									</div>
+									<div>
+										<div class="fc-field-label" style="font-size: 10px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Contract Land</div>
+										<div style="font-size: 14px; font-weight: 600; color: #111827;">${frm.doc.contract_land_area} ${frm.doc.land_measurement}</div>
+									</div>
+								</div>
+							</div>
+							
+							<div style="font-weight: 600; margin-bottom: 12px; font-size: 12px; color: #111827; text-transform: uppercase; letter-spacing: 0.5px;">Enter Quantity & Rate:</div>
+							${items_html}
+						`
+					}
+				],
+				primary_action_label: __('Create Sales Order'),
+				primary_action(values) {
+					create_seed_sales_order(frm, d);
+				}
+			});
+			
+			d.$wrapper.find('.modal-dialog').addClass('fc-saas-dialog');
+			d.show();
+		}
+	});
+}
+
+function build_seed_booking_items_table(items) {
+	let html = `
+		<div style="border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;">
+			<table id="seed-booking-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+				<thead>
+					<tr style="background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+						<th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Item Code</th>
+						<th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Item Name</th>
+						<th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Item Group</th>
+						<th style="padding: 10px 12px; text-align: center; font-weight: 600; color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; width: 80px;">UOM</th>
+						<th style="padding: 10px 12px; text-align: center; font-weight: 600; color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; width: 120px;">Quantity</th>
+						<th style="padding: 10px 12px; text-align: center; font-weight: 600; color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; width: 120px;">Rate (₹)</th>
+					</tr>
+				</thead>
+				<tbody>
+	`;
+	
+	items.forEach((item, idx) => {
+		html += `
+			<tr class="item-row" 
+			    data-item-code="${item.item_code}" 
+			    data-idx="${idx}"
+			    data-uom="${item.uom || 'Nos'}"
+			    style="border-bottom: 1px solid #e5e7eb;">
+				<td style="padding: 10px 12px; font-weight: 500; color: #111827;">${item.item_code}</td>
+				<td style="padding: 10px 12px; color: #374151;">${item.item_name || ''}</td>
+				<td style="padding: 10px 12px; color: #6b7280;">${item.item_group || ''}</td>
+				<td style="padding: 10px 12px; text-align: center;">
+					<span style="display: inline-block; padding: 2px 8px; background: #eff6ff; color: #1e40af; border-radius: 3px; font-weight: 500; font-size: 11px;">${item.uom || 'Nos'}</span>
+				</td>
+				<td style="padding: 10px 12px;">
+					<input type="number" 
+						   class="item-qty fc-field-input" 
+						   data-idx="${idx}"
+						   min="0" 
+						   step="1"
+						   style="width: 100%; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; text-align: center;" 
+						   placeholder="0" />
+				</td>
+				<td style="padding: 10px 12px;">
+					<input type="number" 
+						   class="item-rate fc-field-input" 
+						   data-idx="${idx}"
+						   min="0" 
+						   step="0.01"
+						   style="width: 100%; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; text-align: center;" 
+						   placeholder="0.00" />
+				</td>
+			</tr>
+		`;
+	});
+	
+	html += `
+				</tbody>
+			</table>
+		</div>
+	`;
+	
+	return html;
+}
+
+function create_seed_sales_order(frm, dialog) {
+	// Collect all items with qty and rate
+	let items = [];
+	
+	$('.item-row').each(function() {
+		let idx = $(this).data('idx');
+		let item_code = $(this).data('item-code');
+		let uom = $(this).data('uom') || 'Nos';
+		let qty = parseFloat($('.item-qty[data-idx="' + idx + '"]').val()) || 0;
+		let rate = parseFloat($('.item-rate[data-idx="' + idx + '"]').val()) || 0;
+		
+		// Only add items with qty > 0 and rate > 0
+		if (qty > 0 && rate > 0) {
+			items.push({
+				item_code: item_code,
+				qty: qty,
+				rate: rate,
+				uom: uom
+			});
+		}
+	});
+	
+	// Validate
+	if (items.length === 0) {
+		frappe.msgprint(__('Please enter Qty and Rate for at least one item'));
+		return;
+	}
+	
+	// Create Sales Order
+	frappe.call({
+		method: 'create_seed_booking',
+		doc: frm.doc,
+		args: {
+			items_data: JSON.stringify(items)
+		},
+		freeze: true,
+		freeze_message: __('Creating Sales Order...'),
+		callback: function(r) {
+			if (r.message && r.message.success) {
+				dialog.hide();
+				
+				// Show success message
+				frappe.show_alert({
+					message: r.message.message,
+					indicator: 'green'
+				}, 7);
+				
+				// Reload form to show updated sales_order field and button
+				frm.reload_doc();
+			}
+		}
+	});
+}
 
 // ==================== CUSTOM STYLES (SaaS Clean) ====================
 
@@ -433,6 +687,14 @@ function show_activate_dialog(frm) {
 }
 
 function show_approve_dialog(frm) {
+	// Get items list for approval dialog
+	let items_rows = '';
+	if (frm.doc.contract_item && frm.doc.contract_item.length > 0) {
+		items_rows = frm.doc.contract_item.map((item, idx) => 
+			`<tr><td>Item ${idx + 1}</td><td>${item.item_code} - ${item.item_name || ''}</td></tr>`
+		).join('');
+	}
+	
 	let d = new frappe.ui.Dialog({
 		title: __('Approve Contract'),
 		fields: [
@@ -441,8 +703,9 @@ function show_approve_dialog(frm) {
 				options: `
 					<table class="fc-table-clean">
 						<tr><td>Farmer</td><td>${frm.doc.farmer_name}</td></tr>
-						<tr><td>Product</td><td>${frm.doc.product}</td></tr>
+						${items_rows}
 						<tr><td>Land</td><td>${frm.doc.contract_land_area} ${frm.doc.land_measurement}</td></tr>
+						<tr><td>Total Qty</td><td>${frm.doc.total_quantity}</td></tr>
 						<tr><td>Value</td><td>${format_currency(frm.doc.total_contract_value)}</td></tr>
 					</table>
 				`
@@ -719,8 +982,8 @@ function get_status_color(status) {
 		'Pending Approval': 'orange',
 		'Active': 'green',
 		'On Hold': 'yellow',
-		'Expired': 'red',
-		'Terminated': 'blue',
+'Expired': 'red',
+		'Terminated': 'red',
 		'Completed': 'green'
 	}[status] || 'grey';
 }

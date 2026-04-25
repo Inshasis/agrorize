@@ -148,6 +148,16 @@ doctype_js = {"Lead" : "public/js/lead.js"}
 # Scheduled Tasks
 # ---------------
 
+
+scheduler_events = {
+    # Daily cron job at 1:00 AM
+    # Marks delayed harvests for active contracts
+    "cron": {
+        "0 1 * * *": [
+            "agrorize.agrorize.doctype.farmer_contract.farmer_contract.mark_delayed_harvests"
+        ]
+    }
+}
 # scheduler_events = {
 # 	"all": [
 # 		"agrorize.tasks.all"
@@ -262,14 +272,15 @@ fixtures = [
     {
         "dt": "Custom HTML Block",
         "filters": []
+    },
+    {
+        "dt": "Item Group",
+        "filters": [
+            ["name", "in", ["Seeds","Tulsi Crops"]]
+        ]
     }
-    # {
-    #     "dt": "Property Setter",
-    #     "filters": [
-    #         ["doc_type", "in", ["Lead"]]
-    #     ]
-    # }
 ]
 
 
 # bench --site agro export-fixtures --app agrorize
+# bench --site agro execute agrorize.agrorize.doctype.farmer_contract.farmer_contract.mark_delayed_harvests

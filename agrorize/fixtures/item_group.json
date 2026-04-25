@@ -1,0 +1,30 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Item Group",
+  "gst_hsn_code": "1211",
+  "image": null,
+  "is_group": 0,
+  "item_group_defaults": [],
+  "item_group_name": "Seeds",
+  "modified": "2026-04-24 17:23:15.170550",
+  "name": "Seeds",
+  "old_parent": "All Item Groups",
+  "parent_item_group": "All Item Groups",
+  "taxes": []
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Item Group",
+  "gst_hsn_code": "12119094",
+  "image": null,
+  "is_group": 0,
+  "item_group_defaults": [],
+  "item_group_name": "Tulsi Crops",
+  "modified": "2026-04-24 17:24:35.453080",
+  "name": "Tulsi Crops",
+  "old_parent": "All Item Groups",
+  "parent_item_group": "All Item Groups",
+  "taxes": []
+ }
+]
