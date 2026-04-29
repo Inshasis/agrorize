@@ -278,8 +278,16 @@ fixtures = [
         "filters": [
             ["name", "in", ["Seeds","Tulsi Crops"]]
         ]
+    },
+    {
+        "dt": "Custom Field",
+        "filters": [
+            ["module", "=", "AgroRize"]
+        ]
     }
 ]
+
+before_uninstall = "agrorize.uninstall.remove_custom_fields"
 
 
 # bench --site agro export-fixtures --app agrorize
