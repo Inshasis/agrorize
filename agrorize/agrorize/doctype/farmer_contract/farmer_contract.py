@@ -3,20 +3,24 @@
 
 """
 Farmer Contract DocType Controller
-Final production version with end_harvest_date calculation
+Production version with Seed Booking functionality
+Fixed for Frappe v15
 """
 
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt, getdate, add_days, date_diff, nowdate, cint
+from frappe.utils import flt, getdate, add_days, date_diff, nowdate, cint, now_datetime
+from datetime import datetime
 
 
 class FarmerContract(Document):
 	"""
 	Farmer Contract - Auto-calculates on every save
+	Supports multiple contract items
 	Validates harvest_cycle_days based on harvest_frequency
 	Auto-sets end_harvest_date to last harvest date
+	Includes Seed Booking functionality
 	"""
 	
 	# Harvest frequency mapping (max days allowed)
@@ -36,6 +40,7 @@ class FarmerContract(Document):
 		self.validate_duplicate_contract()
 		self.validate_crop_configuration()
 		self.validate_harvest_frequency()
+		self.validate_contract_items()
 		self.calculate_totals()
 		self.regenerate_harvest_schedule_on_save()
 		self.set_end_harvest_date()
@@ -72,45 +77,72 @@ class FarmerContract(Document):
 	
 	def validate_duplicate_contract(self):
 		"""
-		Prevent duplicate active contracts for same farmer and product
-		Only one active contract allowed per farmer-product combination
+		Prevent duplicate active contracts for same farmer and items
+		Only one active contract allowed per farmer-item combination
 		"""
-		if not self.farmer or not self.product:
+		if not self.farmer or not self.contract_item:
 			return
 		
-		# Check for existing active contracts
-		filters = {
-			'farmer': self.farmer,
-			'product': self.product,
-			'status': ['in', ['Active', 'Pending Approval']],
-			'docstatus': ['!=', 2]  # Exclude cancelled
-		}
+		# Get all item codes from this contract
+		item_codes = [item.item_code for item in self.contract_item if item.item_code]
 		
-		# Exclude current document if updating
-		if not self.is_new():
-			filters['name'] = ['!=', self.name]
+		if not item_codes:
+			return
 		
-		existing = frappe.get_all(
-			'Farmer Contract',
-			filters=filters,
-			fields=['name', 'status', 'contract_date']
-		)
+		# Check for existing active contracts with same items
+		for item_code in item_codes:
+			filters = {
+				'farmer': self.farmer,
+				'status': ['in', ['Active', 'Pending Approval']],
+				'docstatus': ['!=', 2]  # Exclude cancelled
+			}
+			
+			# Exclude current document if updating
+			if not self.is_new():
+				filters['name'] = ['!=', self.name]
+			
+			# Check if any active contract has this item
+			existing_contracts = frappe.get_all(
+				'Farmer Contract',
+				filters=filters,
+				fields=['name', 'status', 'contract_date']
+			)
+			
+			for contract in existing_contracts:
+				# Check if this contract has the same item
+				existing_items = frappe.get_all(
+					'Contract Item',
+					filters={
+						'parent': contract.name,
+						'item_code': item_code
+					},
+					fields=['item_code', 'item_name']
+				)
+				
+				if existing_items:
+					frappe.throw(_(
+						"Active contract already exists for Farmer <strong>{0}</strong> and Item <strong>{1}</strong>.<br><br>"
+						"Existing Contract: <strong>{2}</strong><br>"
+						"Status: <strong>{3}</strong><br>"
+						"Date: <strong>{4}</strong><br><br>"
+						"Please complete or terminate the existing contract before creating a new one."
+					).format(
+						self.farmer_name or self.farmer,
+						item_code,
+						contract.name,
+						contract.status,
+						contract.contract_date
+					), title=_("Duplicate Contract Not Allowed"))
+	
+	def validate_contract_items(self):
+		"""Validate contract items table"""
+		if not self.contract_item:
+			frappe.throw(_("At least one contract item is required"))
 		
-		if existing:
-			existing_contract = existing[0]
-			frappe.throw(_(
-				"Active contract already exists for Farmer <strong>{0}</strong> and Product <strong>{1}</strong>.<br><br>"
-				"Existing Contract: <strong>{2}</strong><br>"
-				"Status: <strong>{3}</strong><br>"
-				"Date: <strong>{4}</strong><br><br>"
-				"Please complete or terminate the existing contract before creating a new one."
-			).format(
-				self.farmer_name or self.farmer,
-				self.product,
-				existing_contract.name,
-				existing_contract.status,
-				existing_contract.contract_date
-			), title=_("Duplicate Contract Not Allowed"))
+		# Check for duplicate items
+		item_codes = [item.item_code for item in self.contract_item if item.item_code]
+		if len(item_codes) != len(set(item_codes)):
+			frappe.throw(_("Duplicate items not allowed in contract"))
 	
 	def validate_crop_configuration(self):
 		"""Validate crop settings"""
@@ -167,8 +199,8 @@ class FarmerContract(Document):
 	
 	def validate_mandatory_fields(self):
 		"""Validate mandatory fields before submission"""
-		if not self.product:
-			frappe.throw(_("Primary Product is required"))
+		if not self.contract_item:
+			frappe.throw(_("At least one Contract Item is required"))
 		
 		if not self.base_price:
 			frappe.throw(_("Base Price is required"))
@@ -295,6 +327,156 @@ class FarmerContract(Document):
 			
 			# Next harvest date
 			current_date = add_days(current_date, self.harvest_cycle_days)
+	
+	# ==================== SEED BOOKING ====================
+	
+	@frappe.whitelist()
+	def create_seed_booking(self, items_data):
+		"""
+		Create Single Sales Order for Seed Booking with all items
+		Saves Sales Order reference to contract
+		
+		Args:
+			items_data: JSON string with format:
+				[
+					{
+						"item_code": "TULSI-RAMA",
+						"qty": 100,
+						"rate": 50,
+						"uom": "Nos"
+					}
+				]
+		
+		Returns:
+			dict: Created Sales Order details
+		"""
+		import json
+		
+		# Parse items data
+		if isinstance(items_data, str):
+			items_data = json.loads(items_data)
+		
+		# Validate contract is submitted
+		if self.docstatus != 1:
+			frappe.throw(_("Contract must be submitted before creating Seed Booking"))
+		
+		# Validate customer
+		if not self.customer:
+			frappe.throw(_("Customer is required for Seed Booking"))
+		
+		# Check if Sales Order already created
+		if self.sales_order:
+			frappe.throw(_("Seed Booking already created: {0}").format(self.sales_order))
+		
+		# Validate at least one item
+		valid_items = [item for item in items_data if item.get('item_code') and item.get('qty') and item.get('rate')]
+		if not valid_items:
+			frappe.throw(_("At least one item with Qty and Rate is required"))
+		
+		# Get company from contract
+		company = self.company or frappe.defaults.get_user_default("Company")
+		
+		# Create Single Sales Order with all items
+		sales_order = frappe.get_doc({
+			"doctype": "Sales Order",
+			"customer": self.customer,
+			"customer_name": self.customer_name,
+			"transaction_date": nowdate(),
+			"delivery_date": add_days(nowdate(), 7),  # 7 days from now
+			"company": company,
+			"custom_is_contract": 1,  # Mark as contract-related
+			"custom_farmer": self.farmer,
+			"custom_farmer_contract": self.name,
+			"items": []
+		})
+		
+		# Add all items to single Sales Order
+		for item_data in valid_items:
+			sales_order.append("items", {
+				"item_code": item_data['item_code'],
+				"qty": flt(item_data['qty']),
+				"rate": flt(item_data['rate']),
+				"uom": item_data.get('uom') or 'Nos',  # Use UOM from item
+				"delivery_date": add_days(nowdate(), 7),
+				"warehouse": self._get_default_warehouse(company)
+			})
+		
+		# Save and submit Sales Order
+		sales_order.insert()
+		sales_order.submit()
+		
+		# Save Sales Order reference to contract
+		frappe.db.set_value('Farmer Contract', self.name, 'sales_order', sales_order.name)
+		frappe.db.commit()
+		
+		# Add comment
+		item_summary = ", ".join([f"{item['item_code']} ({item['qty']} {item.get('uom', 'Nos')})" for item in valid_items])
+		self.add_comment(
+			"Comment",
+			_("Seed Booking created: {0} - Items: {1}").format(
+				'<a href="/app/sales-order/{0}">{0}</a>'.format(sales_order.name),
+				item_summary
+			)
+		)
+		
+		return {
+			"success": True,
+			"sales_order": sales_order.name,
+			"message": _("Sales Order {0} created successfully with {1} item(s)").format(
+				sales_order.name,
+				len(valid_items)
+			)
+		}
+	
+	def _get_default_warehouse(self, company):
+		"""Get default warehouse for company"""
+		warehouse = frappe.db.get_value(
+			"Stock Settings",
+			None,
+			"default_warehouse"
+		)
+		
+		if not warehouse:
+			# Get first warehouse for company
+			warehouse = frappe.db.get_value(
+				"Warehouse",
+				{"company": company, "disabled": 0},
+				"name"
+			)
+		
+		return warehouse
+	
+	def _link_sales_order(self, sales_order_name):
+		"""Link sales order to contract"""
+		# Check if custom field exists for sales order linking
+		# You may need to add a custom field to store sales orders
+		# For now, we just add a comment
+		pass
+	
+	@frappe.whitelist()
+	def get_seed_booking_data(self):
+		"""
+		Get data for Seed Booking popup
+		
+		Returns:
+			dict: Pre-filled data for booking
+		"""
+		return {
+			"customer": self.customer,
+			"customer_name": self.customer_name,
+			"contract_date": self.contract_date,
+			"items": [
+				{
+					"item_code": item.item_code,
+					"item_name": item.item_name,
+					"item_group": item.item_group,
+					"uom": item.uom or "Nos",  # Get UOM from contract item
+					"qty": 0,  # User will fill
+					"rate": 0  # User will fill
+				}
+				for item in self.contract_item
+			]
+		}
 	
 	# ==================== API METHODS ====================
 	
@@ -431,33 +613,157 @@ class FarmerContract(Document):
 		return upcoming
 
 
-# ==================== SCHEDULED TASKS ====================
+# ==================== SCHEDULED TASKS - OPTIMIZED FOR 50K+ RECORDS ====================
 
 def mark_delayed_harvests():
 	"""
-	Scheduled task - Run daily
-	Marks harvests as delayed if past due date
+	Main scheduled task - Run daily at 1:00 AM
+	Queues background jobs for marking delayed harvests in batches
+	
+	Strategy:
+	- Processes 500 contracts per job to avoid timeout
+	- Runs jobs in background queue to avoid blocking
+	- Suitable for 50K+ contracts over next year
 	"""
-	today = getdate(nowdate())
-	
-	contracts = frappe.get_all(
-		"Farmer Contract",
-		filters={"docstatus": 1, "status": "Active"},
-		fields=["name"]
-	)
-	
-	for contract in contracts:
-		doc = frappe.get_doc("Farmer Contract", contract.name)
-		modified = False
+	try:
+		# Get count of active contracts
+		total_contracts = frappe.db.count(
+			'Farmer Contract',
+			filters={'docstatus': 1, 'status': 'Active'}
+		)
 		
-		for harvest in doc.crop_harvest_schedule:
-			if harvest.harvest_status == "Planned" and getdate(harvest.harvest_date) < today:
-				harvest.harvest_status = "Delayed"
-				modified = True
+		if total_contracts == 0:
+			frappe.logger().info("No active contracts found for delayed harvest marking")
+			return
 		
-		if modified:
-			doc.save(ignore_permissions=True)
+		# Batch size - 500 contracts per job
+		batch_size = 500
+		total_batches = (total_contracts // batch_size) + (1 if total_contracts % batch_size else 0)
+		
+		frappe.logger().info(
+			f"Queueing {total_batches} background jobs to process {total_contracts} contracts "
+			f"in batches of {batch_size}"
+		)
+		
+		# Queue background jobs for each batch
+		for batch_num in range(total_batches):
+			offset = batch_num * batch_size
+			
+			frappe.enqueue(
+				method='agrorize.agrorize.doctype.farmer_contract.farmer_contract.process_delayed_harvests_batch',
+				queue='long',  # Use 'long' queue for background processing
+				timeout=900,  # 15 minutes timeout per batch
+				is_async=True,
+				job_name=f'mark_delayed_harvests_batch_{batch_num}',
+				offset=offset,
+				limit=batch_size,
+				batch_num=batch_num + 1,
+				total_batches=total_batches
+			)
+		
+		frappe.logger().info(f"Successfully queued {total_batches} batch jobs for delayed harvest marking")
+		
+	except Exception as e:
+		frappe.logger().error(f"Error in mark_delayed_harvests scheduler: {str(e)}")
+		frappe.log_error(
+			message=frappe.get_traceback(),
+			title="Delayed Harvest Marking - Scheduler Error"
+		)
 
+
+def process_delayed_harvests_batch(offset=0, limit=500, batch_num=1, total_batches=1):
+	"""
+	Background job to process a batch of contracts
+	Called by mark_delayed_harvests() scheduler
+	FIXED FOR FRAPPE V15 - Uses proper logging methods
+	
+	Args:
+		offset: Starting position in query
+		limit: Number of records to process (default: 500)
+		batch_num: Current batch number (for logging)
+		total_batches: Total batches to process (for logging)
+	"""
+	try:
+		start_time = now_datetime()
+		today = getdate(nowdate())
+		
+		# Get batch of active contracts
+		contracts = frappe.db.get_all(
+			'Farmer Contract',
+			filters={'docstatus': 1, 'status': 'Active'},
+			fields=['name'],
+			limit_start=offset,
+			limit_page_length=limit,
+			order_by='modified desc'  # Process recently modified first
+		)
+		
+		if not contracts:
+			frappe.logger().info(f"Batch {batch_num}/{total_batches}: No contracts found at offset {offset}")
+			return
+		
+		contracts_processed = 0
+		harvests_marked_delayed = 0
+		errors = []
+		
+		# Process each contract in this batch
+		for contract in contracts:
+			try:
+				# Use direct SQL update for better performance
+				# Get all planned harvests that are past due
+				result = frappe.db.sql("""
+					UPDATE `tabCrop Harvest Schedule`
+					SET harvest_status = 'Delayed',
+						modified = NOW(),
+						modified_by = %s
+					WHERE parent = %s
+						AND harvest_status = 'Planned'
+						AND harvest_date < %s
+						AND docstatus < 2
+				""", (frappe.session.user, contract.name, today))
+				
+				# Get row count affected
+				affected_rows = frappe.db.sql("SELECT ROW_COUNT()")[0][0]
+				
+				if affected_rows > 0:
+					harvests_marked_delayed += affected_rows
+					contracts_processed += 1
+				
+			except Exception as e:
+				error_msg = f"Contract {contract.name}: {str(e)}"
+				errors.append(error_msg)
+				frappe.logger().error(f"Error processing {error_msg}")
+		
+		# Commit the transaction
+		frappe.db.commit()
+		
+		end_time = now_datetime()
+		duration = (end_time - start_time).total_seconds()
+		
+		# Log batch completion
+		log_message = (
+			f"Batch {batch_num}/{total_batches} completed in {duration:.2f}s\n"
+			f"Contracts in batch: {len(contracts)}\n"
+			f"Contracts with delayed harvests: {contracts_processed}\n"
+			f"Total harvests marked delayed: {harvests_marked_delayed}\n"
+			f"Errors: {len(errors)}"
+		)
+		
+		frappe.logger().info(log_message)
+		
+		# Log errors if any
+		if errors:
+			frappe.log_error(
+				message="\n".join(errors[:10]),  # Log first 10 errors
+				title=f"Delayed Harvest Batch {batch_num} - Partial Errors"
+			)
+		
+	except Exception as e:
+		frappe.logger().error(f"Critical error in batch {batch_num}: {str(e)}")
+		frappe.log_error(
+			message=frappe.get_traceback(),
+			title=f"Delayed Harvest Batch {batch_num} - Critical Error"
+		)
+		frappe.db.rollback()
 
 # ==================== UTILITY FUNCTIONS ====================
 
@@ -467,12 +773,23 @@ def get_contract_summary(contract_name):
 	doc = frappe.get_doc("Farmer Contract", contract_name)
 	perf = doc.get_harvest_performance()
 	
+	# Get all contract items
+	items = [
+		{
+			'item_code': item.item_code,
+			'item_name': item.item_name,
+			'item_group': item.item_group,
+			'variety': item.variety
+		}
+		for item in doc.contract_item
+	]
+	
 	return {
 		"contract": doc.name,
 		"contract_date": doc.contract_date,
 		"farmer": doc.farmer_name,
 		"farmer_code": doc.farmer_code,
-		"product": doc.product,
+		"items": items,
 		"status": doc.status,
 		"first_harvest_date": doc.first_harvest_date,
 		"end_harvest_date": doc.end_harvest_date,
@@ -510,3 +827,31 @@ def get_max_harvest_days(frequency):
 	}
 	
 	return frequency_map.get(frequency, 365)
+
+
+@frappe.whitelist()
+def get_items_by_item_group(item_group):
+	"""
+	Get items filtered by item group
+	Used for Contract Item child table filtering
+	
+	Args:
+		item_group: Item Group name
+		
+	Returns:
+		list: List of items with code and name
+	"""
+	if not item_group:
+		return []
+	
+	items = frappe.get_all(
+		'Item',
+		filters={
+			'item_group': item_group,
+			'disabled': 0
+		},
+		fields=['item_code', 'item_name', 'item_group'],
+		order_by='item_name asc'
+	)
+	
+	return items

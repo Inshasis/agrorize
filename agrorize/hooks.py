@@ -43,7 +43,10 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {"Lead" : "public/js/lead.js"}
+doctype_js = {
+    "Lead" : "public/js/lead.js",
+    "Customer" : "public/js/customer.js"
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -148,6 +151,16 @@ doctype_js = {"Lead" : "public/js/lead.js"}
 # Scheduled Tasks
 # ---------------
 
+
+scheduler_events = {
+    # Daily cron job at 1:00 AM
+    # Marks delayed harvests for active contracts
+    "cron": {
+        "0 1 * * *": [
+            "agrorize.agrorize.doctype.farmer_contract.farmer_contract.mark_delayed_harvests"
+        ]
+    }
+}
 # scheduler_events = {
 # 	"all": [
 # 		"agrorize.tasks.all"
@@ -262,14 +275,23 @@ fixtures = [
     {
         "dt": "Custom HTML Block",
         "filters": []
+    },
+    {
+        "dt": "Item Group",
+        "filters": [
+            ["name", "in", ["Seeds","Tulsi Crops"]]
+        ]
+    },
+    {
+        "dt": "Custom Field",
+        "filters": [
+            ["module", "=", "AgroRize"]
+        ]
     }
-    # {
-    #     "dt": "Property Setter",
-    #     "filters": [
-    #         ["doc_type", "in", ["Lead"]]
-    #     ]
-    # }
 ]
+
+before_uninstall = "agrorize.uninstall.remove_custom_fields"
 
 
 # bench --site agro export-fixtures --app agrorize
+# bench --site agro execute agrorize.agrorize.doctype.farmer_contract.farmer_contract.mark_delayed_harvests
