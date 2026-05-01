@@ -15,6 +15,17 @@ frappe.ui.form.on("Lead", {
 				},
 			});
 		}
+
+		// Set up village filter based on postal code on form load
+        if (frm.doc.custom_postal_code) {
+            frm.set_query('custom_village', function() {
+                return {
+                    filters: {
+                        'postal_code': frm.doc.custom_postal_code
+                    }
+                };
+            });
+        }
 	},
 });
 
