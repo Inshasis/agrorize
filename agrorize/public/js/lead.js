@@ -18,24 +18,28 @@ frappe.ui.form.on("Lead", {
 	},
 });
 
+
 frappe.ui.form.on("Lead", {
 	refresh: function (frm) {
-		// Show "Create Farmer" button only when status is "Converted"
+		// Show "Create Farmer" or "View Farmer" button only when status is "Converted"
 		if (frm.doc.status === "Converted" && !frm.doc.__islocal) {
-			// Check if Farmer already created
+			// Check if Farmer already exists by matching mobile field
 			frappe.call({
-				method: "frappe.client.get_value",
+				method: "frappe.client.get_list",
 				args: {
 					doctype: "Farmer",
 					filters: { mobile: frm.doc.mobile_no },
-					fieldname: "name",
+					fields: ["name", "farmer_name"],
+					limit: 1,
 				},
 				callback: function (r) {
-					if (r.message?.name) {
+					if (r.message && r.message.length > 0) {
+						// Farmer already exists — show View button
 						frm.add_custom_button(__("View Farmer"), () => {
-							frappe.set_route("Form", "Farmer", r.message.name);
+							frappe.set_route("Form", "Farmer", r.message[0].name);
 						});
 					} else {
+						// No Farmer found — show Create button
 						frm.add_custom_button(__("Create Farmer"), () => {
 							create_farmer_from_lead(frm);
 						}).addClass("btn-primary");
@@ -48,7 +52,7 @@ frappe.ui.form.on("Lead", {
 
 function create_farmer_from_lead(frm) {
 	frappe.call({
-		method: "agrorize.api.lead.create_farmer_from_lead",
+		method: "agrorize.agrorize.doctype.lead.create_farmer_from_lead",
 		args: {
 			lead_name: frm.doc.name,
 		},
@@ -63,7 +67,8 @@ function create_farmer_from_lead(frm) {
 					},
 					5,
 				);
-
+				// Refresh the form so the View button appears instead of Create
+				frm.reload_doc();
 				// Ask user if they want to open the Farmer
 				frappe.confirm(
 					__("Farmer created successfully. Do you want to open it?"),
