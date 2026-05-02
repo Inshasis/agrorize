@@ -20,7 +20,7 @@ class FarmerContract(Document):
 	Supports multiple contract items
 	Validates harvest_cycle_days based on harvest_frequency
 	Auto-sets end_harvest_date to last harvest date
-	Includes Seed Booking functionality
+	Includes Seed Booking functionality with auto-qty from AgroRize Setting
 	"""
 	
 	# Harvest frequency mapping (max days allowed)
@@ -331,6 +331,63 @@ class FarmerContract(Document):
 	# ==================== SEED BOOKING ====================
 	
 	@frappe.whitelist()
+	def get_seed_booking_data(self):
+		"""
+		Get data for Seed Booking popup.
+
+		Quantity is auto-calculated as:
+			per_acer_plant (from AgroRize Setting) x contract_land_area
+
+		Example:
+			per_acer_plant  = 22,000
+			contract_land_area = 2 acres
+			default_qty     = 44,000
+
+		The calculated qty is pre-filled in the popup; the user can
+		freely increase or decrease it per row before confirming.
+
+		Returns:
+			dict: Pre-filled booking data including default_qty,
+			      per_acer_plant, contract_land_area, and items list.
+		"""
+		# --- Fetch per_acer_plant from AgroRize Setting (Single DocType) ---
+		per_acer_plant = 0
+		try:
+			agrorize_setting = frappe.get_single("AgroRize Setting")
+			per_acer_plant = flt(agrorize_setting.per_acer_plant)
+		except Exception:
+			# If setting not found or field missing, default to 0 (no pre-fill)
+			per_acer_plant = 0
+
+		# --- Auto-calculate default quantity ---
+		# Formula: per_acer_plant x contract_land_area
+		contract_land_area = flt(self.contract_land_area)
+		if per_acer_plant and contract_land_area:
+			default_qty = per_acer_plant * contract_land_area
+		else:
+			default_qty = 0
+
+		return {
+			"customer": self.customer,
+			"customer_name": self.customer_name,
+			"contract_date": self.contract_date,
+			"per_acer_plant": per_acer_plant,
+			"contract_land_area": contract_land_area,
+			"default_qty": default_qty,
+			"items": [
+				{
+					"item_code": item.item_code,
+					"item_name": item.item_name,
+					"item_group": item.item_group,
+					"uom": item.uom or "Nos",
+					"qty": default_qty,   # Pre-filled; user can override
+					"rate": 0             # User must enter rate
+				}
+				for item in self.contract_item
+			]
+		}
+
+	@frappe.whitelist()
 	def create_seed_booking(self, items_data):
 		"""
 		Create Single Sales Order for Seed Booking with all items
@@ -396,7 +453,7 @@ class FarmerContract(Document):
 				"item_code": item_data['item_code'],
 				"qty": flt(item_data['qty']),
 				"rate": flt(item_data['rate']),
-				"uom": item_data.get('uom') or 'Nos',  # Use UOM from item
+				"uom": item_data.get('uom') or 'Nos',
 				"delivery_date": add_days(nowdate(), 7),
 				"warehouse": self._get_default_warehouse(company)
 			})
@@ -410,7 +467,10 @@ class FarmerContract(Document):
 		frappe.db.commit()
 		
 		# Add comment
-		item_summary = ", ".join([f"{item['item_code']} ({item['qty']} {item.get('uom', 'Nos')})" for item in valid_items])
+		item_summary = ", ".join([
+			f"{item['item_code']} ({item['qty']} {item.get('uom', 'Nos')})"
+			for item in valid_items
+		])
 		self.add_comment(
 			"Comment",
 			_("Seed Booking created: {0} - Items: {1}").format(
@@ -448,35 +508,7 @@ class FarmerContract(Document):
 	
 	def _link_sales_order(self, sales_order_name):
 		"""Link sales order to contract"""
-		# Check if custom field exists for sales order linking
-		# You may need to add a custom field to store sales orders
-		# For now, we just add a comment
 		pass
-	
-	@frappe.whitelist()
-	def get_seed_booking_data(self):
-		"""
-		Get data for Seed Booking popup
-		
-		Returns:
-			dict: Pre-filled data for booking
-		"""
-		return {
-			"customer": self.customer,
-			"customer_name": self.customer_name,
-			"contract_date": self.contract_date,
-			"items": [
-				{
-					"item_code": item.item_code,
-					"item_name": item.item_name,
-					"item_group": item.item_group,
-					"uom": item.uom or "Nos",  # Get UOM from contract item
-					"qty": 0,  # User will fill
-					"rate": 0  # User will fill
-				}
-				for item in self.contract_item
-			]
-		}
 	
 	# ==================== API METHODS ====================
 	
@@ -651,8 +683,8 @@ def mark_delayed_harvests():
 			
 			frappe.enqueue(
 				method='agrorize.agrorize.doctype.farmer_contract.farmer_contract.process_delayed_harvests_batch',
-				queue='long',  # Use 'long' queue for background processing
-				timeout=900,  # 15 minutes timeout per batch
+				queue='long',
+				timeout=900,
 				is_async=True,
 				job_name=f'mark_delayed_harvests_batch_{batch_num}',
 				offset=offset,
@@ -694,7 +726,7 @@ def process_delayed_harvests_batch(offset=0, limit=500, batch_num=1, total_batch
 			fields=['name'],
 			limit_start=offset,
 			limit_page_length=limit,
-			order_by='modified desc'  # Process recently modified first
+			order_by='modified desc'
 		)
 		
 		if not contracts:
@@ -709,7 +741,6 @@ def process_delayed_harvests_batch(offset=0, limit=500, batch_num=1, total_batch
 		for contract in contracts:
 			try:
 				# Use direct SQL update for better performance
-				# Get all planned harvests that are past due
 				result = frappe.db.sql("""
 					UPDATE `tabCrop Harvest Schedule`
 					SET harvest_status = 'Delayed',
@@ -739,7 +770,6 @@ def process_delayed_harvests_batch(offset=0, limit=500, batch_num=1, total_batch
 		end_time = now_datetime()
 		duration = (end_time - start_time).total_seconds()
 		
-		# Log batch completion
 		log_message = (
 			f"Batch {batch_num}/{total_batches} completed in {duration:.2f}s\n"
 			f"Contracts in batch: {len(contracts)}\n"
@@ -750,10 +780,9 @@ def process_delayed_harvests_batch(offset=0, limit=500, batch_num=1, total_batch
 		
 		frappe.logger().info(log_message)
 		
-		# Log errors if any
 		if errors:
 			frappe.log_error(
-				message="\n".join(errors[:10]),  # Log first 10 errors
+				message="\n".join(errors[:10]),
 				title=f"Delayed Harvest Batch {batch_num} - Partial Errors"
 			)
 		
@@ -765,6 +794,7 @@ def process_delayed_harvests_batch(offset=0, limit=500, batch_num=1, total_batch
 		)
 		frappe.db.rollback()
 
+
 # ==================== UTILITY FUNCTIONS ====================
 
 @frappe.whitelist()
@@ -773,7 +803,6 @@ def get_contract_summary(contract_name):
 	doc = frappe.get_doc("Farmer Contract", contract_name)
 	perf = doc.get_harvest_performance()
 	
-	# Get all contract items
 	items = [
 		{
 			'item_code': item.item_code,
