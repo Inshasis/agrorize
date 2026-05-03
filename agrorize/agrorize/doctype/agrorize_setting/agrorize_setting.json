@@ -1,0 +1,67 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-05-01 16:43:15.943083",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "per_acer_plant",
+  "column_break_uykm",
+  "sales_person_commision",
+  "expected_per_acer_qty"
+ ],
+ "fields": [
+  {
+   "fieldname": "per_acer_plant",
+   "fieldtype": "Float",
+   "label": "Per Acer Plant",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_uykm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Per Acer Set Commision",
+   "fieldname": "sales_person_commision",
+   "fieldtype": "Currency",
+   "label": "Sales Person Commision",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "expected_per_acer_qty",
+   "fieldtype": "Float",
+   "label": "Expected Per Acer Qty",
+   "non_negative": 1,
+   "precision": "2"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-05-02 18:19:57.875036",
+ "modified_by": "Administrator",
+ "module": "AgroRize",
+ "name": "AgroRize Setting",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

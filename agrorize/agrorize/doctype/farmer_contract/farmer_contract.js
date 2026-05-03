@@ -9,7 +9,7 @@ frappe.ui.form.on('Farmer Contract', {
 		
 		add_custom_styles();
 		add_status_buttons(frm);
-		add_seed_booking_button(frm);  // NEW: Add Seed Booking button
+		add_seed_booking_button(frm);
 		
 		if (frm.doc.docstatus === 1 && frm.doc.crop_harvest_schedule) {
 			add_harvest_buttons(frm);
@@ -138,7 +138,7 @@ function add_seed_booking_button(frm) {
 }
 
 function show_seed_booking_dialog(frm) {
-	// Fetch contract data
+	// Fetch contract data including auto-calculated qty from AgroRize Setting
 	frappe.call({
 		method: 'get_seed_booking_data',
 		doc: frm.doc,
@@ -149,9 +149,24 @@ function show_seed_booking_dialog(frm) {
 			}
 			
 			let data = r.message;
+			let default_qty = data.default_qty || 0;
 			
-			// Prepare items table
-			let items_html = build_seed_booking_items_table(data.items);
+			// Prepare items table with pre-filled qty
+			let items_html = build_seed_booking_items_table(data.items, default_qty);
+			
+			// Build auto-calc info banner if per_acer_plant is configured
+			let auto_qty_banner = '';
+			if (data.default_qty > 0) {
+				auto_qty_banner = `
+					<div class="fc-alert-compact fc-alert-info" style="margin-top: 12px; margin-bottom: 0;">
+						<strong>Auto-calculated Qty:</strong>
+						${data.per_acer_plant} plants/acre
+						&times; ${data.contract_land_area} acres
+						= <strong>${data.default_qty}</strong>
+						&nbsp;&mdash;&nbsp;You can adjust per row as needed.
+					</div>
+				`;
+			}
 			
 			let d = new frappe.ui.Dialog({
 				title: __('Seed Booking'),
@@ -179,6 +194,7 @@ function show_seed_booking_dialog(frm) {
 										<div style="font-size: 14px; font-weight: 600; color: #111827;">${frm.doc.contract_land_area} ${frm.doc.land_measurement}</div>
 									</div>
 								</div>
+								${auto_qty_banner}
 							</div>
 							
 							<div style="font-weight: 600; margin-bottom: 12px; font-size: 12px; color: #111827; text-transform: uppercase; letter-spacing: 0.5px;">Enter Quantity & Rate:</div>
@@ -188,7 +204,7 @@ function show_seed_booking_dialog(frm) {
 				],
 				primary_action_label: __('Create Sales Order'),
 				primary_action(values) {
-					create_seed_sales_order(frm, d);
+					create_seed_sales_order(frm, d, data.items);
 				}
 			});
 			
@@ -198,7 +214,9 @@ function show_seed_booking_dialog(frm) {
 	});
 }
 
-function build_seed_booking_items_table(items) {
+function build_seed_booking_items_table(items, default_qty) {
+	// default_qty: auto-calculated from per_acer_plant x contract_land_area
+	// Pre-filled in each row's qty input; user can override freely
 	let html = `
 		<div style="border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;">
 			<table id="seed-booking-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
@@ -208,7 +226,7 @@ function build_seed_booking_items_table(items) {
 						<th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Item Name</th>
 						<th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Item Group</th>
 						<th style="padding: 10px 12px; text-align: center; font-weight: 600; color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; width: 80px;">UOM</th>
-						<th style="padding: 10px 12px; text-align: center; font-weight: 600; color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; width: 120px;">Quantity</th>
+						<th style="padding: 10px 12px; text-align: center; font-weight: 600; color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; width: 140px;">Quantity</th>
 						<th style="padding: 10px 12px; text-align: center; font-weight: 600; color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; width: 120px;">Rate (₹)</th>
 					</tr>
 				</thead>
@@ -216,6 +234,9 @@ function build_seed_booking_items_table(items) {
 	`;
 	
 	items.forEach((item, idx) => {
+		// Pre-fill qty with auto-calculated value; empty string if 0 so placeholder shows
+		let qty_value = default_qty > 0 ? default_qty : '';
+
 		html += `
 			<tr class="item-row" 
 			    data-item-code="${item.item_code}" 
@@ -234,6 +255,7 @@ function build_seed_booking_items_table(items) {
 						   data-idx="${idx}"
 						   min="0" 
 						   step="1"
+						   value="${qty_value}"
 						   style="width: 100%; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; text-align: center;" 
 						   placeholder="0" />
 				</td>
@@ -259,18 +281,23 @@ function build_seed_booking_items_table(items) {
 	return html;
 }
 
-function create_seed_sales_order(frm, dialog) {
-	// Collect all items with qty and rate
+function create_seed_sales_order(frm, dialog, items_meta) {
+	// Scope ALL selectors inside the dialog wrapper to avoid
+	// picking up stale/wrong elements from the rest of the page DOM.
+	let $scope = dialog.$wrapper;
 	let items = [];
-	
-	$('.item-row').each(function() {
-		let idx = $(this).data('idx');
-		let item_code = $(this).data('item-code');
-		let uom = $(this).data('uom') || 'Nos';
-		let qty = parseFloat($('.item-qty[data-idx="' + idx + '"]').val()) || 0;
-		let rate = parseFloat($('.item-rate[data-idx="' + idx + '"]').val()) || 0;
-		
-		// Only add items with qty > 0 and rate > 0
+
+	$scope.find('.item-row').each(function() {
+		let $row = $(this);
+		let idx      = $row.data('idx');
+		let item_code = $row.data('item-code');
+		let uom      = $row.data('uom') || 'Nos';
+
+		// Read inputs scoped inside this specific dialog
+		let qty  = parseFloat($scope.find('.item-qty[data-idx="' + idx + '"]').val()) || 0;
+		let rate = parseFloat($scope.find('.item-rate[data-idx="' + idx + '"]').val()) || 0;
+
+		// Only add items where both qty > 0 AND rate > 0
 		if (qty > 0 && rate > 0) {
 			items.push({
 				item_code: item_code,
@@ -280,7 +307,7 @@ function create_seed_sales_order(frm, dialog) {
 			});
 		}
 	});
-	
+
 	// Validate
 	if (items.length === 0) {
 		frappe.msgprint(__('Please enter Qty and Rate for at least one item'));
@@ -982,7 +1009,7 @@ function get_status_color(status) {
 		'Pending Approval': 'orange',
 		'Active': 'green',
 		'On Hold': 'yellow',
-'Expired': 'red',
+		'Expired': 'red',
 		'Terminated': 'red',
 		'Completed': 'green'
 	}[status] || 'grey';
